@@ -1,3 +1,9 @@
+> **NOTE**
+>
+> This application uses a single database instance for all microservices.
+
+</br>
+
 # Run application loopback rest-api/microservices
 
 ## Option 1 - use docker
