@@ -1,8 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -11,8 +13,15 @@ export class UserService {
     @Inject('BOOK_SERVICE') private bookServiceClient: ClientProxy,
   ) { }
 
-  public async createUser(payload) {
-    return
+  public async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const newUser = new this.userModel(createUserDto);
+    return newUser.save();
+  }
+
+  public async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+    if (!updatedUser) throw new NotFoundException('Invalid user');
+    return updatedUser;
   }
 
   public async getAllUser(page: number = 0, limit?: number, search?: string): Promise<{ users: User[], total: number }> {
@@ -39,5 +48,23 @@ export class UserService {
     const total = await this.userModel.count(filters);
 
     return { users, total };
+  }
+
+  public async getUserById(id: string): Promise<User> {
+    const user = await this.userModel.findById(id, { password: 0 }).exec();
+    if (!user) throw new NotFoundException('Invalid user');
+    return user;
+  }
+
+  public async deleteUser(id: string): Promise<any> {
+    const deletedUser = await this.userModel.findByIdAndRemove(id);
+    if (!deletedUser) throw new NotFoundException('Invalid user');
+    return deletedUser;
+  }
+
+  public async banTheUser(id: string): Promise<any> {
+    const banned = await this.userModel.findByIdAndUpdate(id, { banned: true }, { new: true });
+    if (!banned) throw new NotFoundException('Invalid user');
+    return banned;
   }
 }

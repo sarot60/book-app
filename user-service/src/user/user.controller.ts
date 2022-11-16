@@ -1,9 +1,11 @@
 import { Response } from "express";
 import { UserService } from './user.service';
-import { Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { MessagePattern, Payload, Ctx, RedisContext } from '@nestjs/microservices';
 import { PaginationParams } from "./dto/pagination.dto";
 import { User } from "./schemas/user.schema";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Controller('user')
 export class UserController {
@@ -11,8 +13,9 @@ export class UserController {
 
   @Post()
   @MessagePattern({ service: 'user', cmd: 'create' })
-  private async createUser() {
-    return 'create user';
+  private async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+    const newUser = await this.userService.createUser(createUserDto);
+    return newUser;
   }
 
   @Get()
@@ -21,31 +24,35 @@ export class UserController {
     @Query() { page, limit }: PaginationParams,
     @Query('search') search: string,
   ): Promise<{ users: User[], total: number }> {
-    const results = await this.userService.getAllUser(page, limit, search);
-    return results;
+    const users = await this.userService.getAllUser(page, limit, search);
+    return users;
   }
 
   @Put(':id')
   @MessagePattern({ service: 'user', cmd: 'update' })
-  private async updateUser() {
-    return 'update user';
+  private async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
+    const updatedUser = await this.userService.updateUser(id, updateUserDto);
+    return updatedUser;
   }
 
   @Get(':id')
   @MessagePattern({ service: 'user', cmd: 'get-by-id' })
-  private async getUserById() {
-    return 'get user by id';
+  private async getUserById(@Param('id') id: string): Promise<User> {
+    const user = await this.userService.getUserById(id);
+    return user;
   }
 
   @Delete(':id')
   @MessagePattern({ service: 'user', cmd: 'delete' })
-  private async deleteUser() {
-    return 'delete';
+  private async deleteUser(@Param('id') id: string): Promise<any> {
+    const deletedUser = await this.userService.deleteUser(id);
+    return { message: 'Delete user successful', _id: deletedUser._id };
   }
 
   @Put('ban/:id')
   @MessagePattern({ service: 'user', cmd: 'ban' })
-  private async banTheUser() {
-    return 'ban the user';
+  private async banTheUser(@Param('id') id: string): Promise<any> {
+    const banned = await this.userService.banTheUser(id);
+    return { message: 'Banned successful', _id: banned._id };
   }
 }
