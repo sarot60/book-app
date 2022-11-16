@@ -1,7 +1,5 @@
-import { ExceptionFilter, Catch, RpcExceptionFilter, ArgumentsHost, HttpException } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
-import { Request, Response } from 'express';
-import { Observable, throwError } from 'rxjs';
+import { throwError } from 'rxjs';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
 
 @Catch(HttpException)
 export class Http2RpcExceptionFilter implements ExceptionFilter {
