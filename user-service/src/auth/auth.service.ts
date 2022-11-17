@@ -1,5 +1,6 @@
-import { HttpStatus, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { CreateUserDto } from "src/user/dto/create-user.dto";
 import { Role } from "src/user/role.enum";
 import { UserService } from "src/user/user.service";
 import { AuthHelper } from "./helpers/auth.helper";
@@ -14,16 +15,14 @@ export class AuthService {
     @Inject(LoginLimitHelper) private readonly loginLimitHelper: LoginLimitHelper,
   ) { }
 
-  public async register(payload) {
+  public async register(payload: CreateUserDto) {
     const hashedPassword = this.authHelper.encodePassword(payload.password + this.configService.get<string>('PASSWORD_SECRET'));
 
     payload.password = hashedPassword;
     payload.roles = [Role.User];
     payload.banned = false;
 
-    const newUser = await this.userService.createUser(payload);
-
-    delete newUser.password;
+    const newUser: any = await this.userService.createUser(payload);
 
     return newUser;
   }
@@ -49,8 +48,26 @@ export class AuthService {
     return { accessToken: this.authHelper.generateToken(user.username, user._id) };
   }
 
-  public async changePassword(password, newPassword) {
+  public async changePassword(_id: string, oldPassword: string, newPassword: string) {
+    const user: any = await this.userService.getUserPasswordById(_id);
 
+    if (!user) throw new NotFoundException('Invalid user');
+
+    const isPasswordValid: boolean = this.authHelper.isPasswordValid(oldPassword + this.configService.get<string>('PASSWORD_SECRET'), user.password)
+
+    if (!isPasswordValid) throw new UnauthorizedException('old password is incorrect.');
+
+    const hashedNewPassword = this.authHelper.encodePassword(newPassword + this.configService.get<string>('PASSWORD_SECRET'));
+
+    const updatedPassword = await this.userService.updatePassword(_id, hashedNewPassword);
+
+    if (updatedPassword.matchedCount === 0) new NotFoundException('Invalid user');
+
+    return {
+      status: HttpStatus.OK,
+      error: null,
+      message: ['Update password successful.']
+    }
   }
 
   public async validateToken(token: string) {
