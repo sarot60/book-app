@@ -6,7 +6,6 @@ import { UserService } from "../../user/user.service";
 
 @Injectable()
 export class AuthHelper {
-
   private readonly jwtService: JwtService;
   private readonly userService: UserService;
   private readonly configService: ConfigService;
@@ -29,5 +28,19 @@ export class AuthHelper {
     const salt: string = bcrypt.genSaltSync(10);
 
     return bcrypt.hashSync(password, salt);
+  }
+
+  public async validateUser(decoded) {
+    return this.userService.getUserById(decoded._id);
+  }
+
+  public async decode(token: string): Promise<unknown> {
+    return this.jwtService.decode(token, null);
+  }
+
+  public async verify(token: string): Promise<any> {
+    try {
+      return this.jwtService.verify(token);
+    } catch (err) { }
   }
 }
