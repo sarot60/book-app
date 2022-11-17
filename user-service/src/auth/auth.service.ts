@@ -92,4 +92,24 @@ export class AuthService {
       banned: auth.banned,
     };
   }
+
+  public async banTheUser(id: string): Promise<any> {
+    const banned = await this.userService.updateUser(id, { banned: true });
+    if (!banned) throw new NotFoundException('Invalid user');
+    return {
+      status: HttpStatus.OK,
+      error: null,
+      message: ['Banned successful.']
+    }
+  }
+
+  public async cancelBanTheUser(id: string): Promise<any> {
+    const banned = await this.userService.updateUser(id, { banned: false });
+    if (!banned) throw new NotFoundException('Invalid user');
+    return {
+      status: HttpStatus.OK,
+      error: null,
+      message: ['Cancel ban successful.']
+    }
+  }
 }

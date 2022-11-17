@@ -29,6 +29,16 @@ export class AuthController {
     return this.authService.changePassword(_id, oldPassword, newPassword);
   }
 
+  @MessagePattern({ service: 'user', cmd: 'ban' })
+  private async banTheUser(@Payload() id: string): Promise<any> {
+    return await this.authService.banTheUser(id);
+  }
+
+  @MessagePattern({ service: 'user', cmd: 'cancel-ban' })
+  private async cancelBanTheUser(@Payload() id: string): Promise<any> {
+    return await this.authService.cancelBanTheUser(id);
+  }
+
   @MessagePattern({ service: 'user', cmd: 'validate-token' })
   private async validateToken(@Payload() payload: string) {
     return this.authService.validateToken(payload);

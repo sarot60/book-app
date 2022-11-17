@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Inject, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, Inject, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { catchError, firstValueFrom, of } from 'rxjs';
@@ -52,5 +52,29 @@ export class AuthController {
     );
 
     return msg;
+  }
+
+  @Put('ban/:id')
+  @Roles(Role.Admin)
+  @UseGuards(AuthJwtGuard, RolesGuard)
+  private async banTheUser(@Param('id') id: string) {
+    const bannedMsg = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'ban' }, id)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+
+    return bannedMsg;
+  }
+
+  @Put('cancel-ban/:id')
+  @Roles(Role.Admin)
+  @UseGuards(AuthJwtGuard, RolesGuard)
+  private async cancelBanTheUser(@Param('id') id: string) {
+    const cancelBanMsg = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'cancel-ban' }, id)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+
+    return cancelBanMsg;
   }
 }
