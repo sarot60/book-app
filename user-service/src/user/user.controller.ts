@@ -1,58 +1,50 @@
 import { Response } from "express";
 import { UserService } from './user.service';
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
-import { MessagePattern, Payload, Ctx, RedisContext } from '@nestjs/microservices';
-import { PaginationParams } from "./dto/pagination.dto";
+import { Body, Controller, Delete, Get, HttpStatus, Inject, NotFoundException, Param, Post, Put, Query, Res, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import { MessagePattern, Payload, Ctx, RedisContext, RpcException } from '@nestjs/microservices';
 import { User } from "./schemas/user.schema";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { GetAllRequestDto } from "./dto/get-all-request.dto";
+import { AuthHelper } from "src/auth/helpers/auth.helper";
+import { ConfigService } from "@nestjs/config";
+import { UpdateUserRequestDto } from "./dto/update-user-request.dto";
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) { }
+  constructor(
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
+    @Inject(AuthHelper) private readonly authHelper: AuthHelper,
+  ) { }
 
-  @Post()
   @MessagePattern({ service: 'user', cmd: 'create' })
-  private async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
-    const newUser = await this.userService.createUser(createUserDto);
-    return newUser;
+  private async createUser(@Payload() createUserDto: CreateUserDto): Promise<User> {
+    const hashedPassword = this.authHelper.encodePassword(createUserDto.password + this.configService.get<string>('PASSWORD_SECRET'));
+    createUserDto.password = hashedPassword;
+    return await this.userService.createUser(createUserDto);
   }
 
-  @Get()
   @MessagePattern({ service: 'user', cmd: 'get-all' })
-  private async getAllUser(
-    @Query() { page, limit }: PaginationParams,
-    @Query('search') search: string,
-  ): Promise<{ users: User[], total: number }> {
-    const users = await this.userService.getAllUser(page, limit, search);
-    return users;
+  private async getAllUser(@Payload() payload: GetAllRequestDto): Promise<{ users: User[], total: number }> {
+    const { page, limit, search } = payload;
+    return await this.userService.getAllUser(page, limit, search);
   }
 
-  @Put(':id')
   @MessagePattern({ service: 'user', cmd: 'update' })
-  private async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
-    const updatedUser = await this.userService.updateUser(id, updateUserDto);
-    return updatedUser;
+  private async updateUser(@Payload() payload: UpdateUserRequestDto): Promise<any> {
+    const id: string = payload.id;
+    const body: UpdateUserDto = payload.body;
+    return await this.userService.updateUser(id, body);
   }
 
-  @Get(':id')
   @MessagePattern({ service: 'user', cmd: 'get-by-id' })
-  private async getUserById(@Param('id') id: string): Promise<User> {
-    const user = await this.userService.getUserById(id);
-    return user;
+  private async getUserById(@Payload() id: string): Promise<User> {
+    return await this.userService.getUserById(id);
   }
 
-  @Delete(':id')
   @MessagePattern({ service: 'user', cmd: 'delete' })
-  private async deleteUser(@Param('id') id: string): Promise<any> {
-    const deletedUser = await this.userService.deleteUser(id);
-    return { message: 'Delete user successful', _id: deletedUser._id };
-  }
-
-  @Put('ban/:id')
-  @MessagePattern({ service: 'user', cmd: 'ban' })
-  private async banTheUser(@Param('id') id: string): Promise<any> {
-    const banned = await this.userService.banTheUser(id);
-    return { message: 'Banned successful', _id: banned._id };
+  private async deleteUser(@Payload() id: string): Promise<any> {
+    return await this.userService.deleteUser(id);
   }
 }

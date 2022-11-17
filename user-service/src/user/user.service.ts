@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -56,15 +56,31 @@ export class UserService {
     return user;
   }
 
+  public async getUserPasswordById(id: string): Promise<User> {
+    const user = await this.userModel.findById(id, { password: 1 }).exec();
+    if (!user) throw new NotFoundException('Invalid user');
+    return user;
+  }
+
+  public async getUserByUsername(username: string): Promise<User> {
+    const user = await this.userModel.findOne({ username }).exec();
+    if (!user) throw new NotFoundException('Invalid user');
+    return user;
+  }
+
+  public async updatePassword(id: string, password: string) {
+    const updatedUser = await this.userModel.updateOne({ _id: id }, { password }).exec();
+    if (updatedUser.matchedCount === 0) throw new NotFoundException('Invalid user');
+    return updatedUser;
+  }
+
   public async deleteUser(id: string): Promise<any> {
     const deletedUser = await this.userModel.findByIdAndRemove(id);
     if (!deletedUser) throw new NotFoundException('Invalid user');
-    return deletedUser;
-  }
-
-  public async banTheUser(id: string): Promise<any> {
-    const banned = await this.userModel.findByIdAndUpdate(id, { banned: true }, { new: true });
-    if (!banned) throw new NotFoundException('Invalid user');
-    return banned;
+    return {
+      status: HttpStatus.OK,
+      error: null,
+      message: ['Deleted successful.']
+    }
   }
 }
