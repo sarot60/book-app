@@ -117,16 +117,42 @@ export class BookService {
   }
 
   public async purchaseBook(payload: PurchaseBookRequestDto): Promise<IPurchaseBookResponse> {
+
+    const quantity = payload.quantity;
+
+    const book = await this.bookModel.findById(payload.bookId).exec();
+    if (!book) {
+      throw new NotFoundException('Invalid Book');
+    }
+
+    const bookStock = book.stock;
+    const bookPrice = book.price;
+    const bookSold = book.sold;
+
+    if (quantity > bookStock) {
+      throw new ForbiddenException('Error!, Quantity more than book stock');
+    }
+
+    payload.price = quantity * bookPrice;
+
+    const newBookStock = bookStock - quantity;
+    const newBookSold = bookSold + quantity;
+
+    const updatedBook = await this.bookModel.findByIdAndUpdate(payload.bookId, { sold: newBookSold, stock: newBookStock }, { new: true });
+    if (!updatedBook) {
+      throw new ConflictException('Error update stock in book');
+    }
+
     const newOrder = new this.purchaseBookModel(payload);
     await newOrder.save();
     if (!newOrder) {
-      throw new ConflictException('Create error.');
+      throw new ConflictException('Create error');
     }
     return {
       data: { _id: newOrder._id },
       status: HttpStatus.OK,
       error: null,
-      message: "Purchase book successful."
+      message: "Purchase book successful"
     }
   }
 }

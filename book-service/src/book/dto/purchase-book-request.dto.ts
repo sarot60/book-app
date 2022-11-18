@@ -4,6 +4,7 @@ import {
   IsMongoId,
   MaxLength,
   IsNotEmpty,
+  IsOptional,
 } from 'class-validator';
 import { Types } from 'mongoose';
 import { IPurchaseBookRequest } from "../book.interface";
@@ -30,5 +31,6 @@ export class PurchaseBookRequestDto implements IPurchaseBookRequest {
   quantity: number;
 
   @IsNumber()
+  @IsOptional()
   price: number;
 }
