@@ -1,22 +1,25 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
+import { Http2RpcExceptionFilter } from './common/filters/http2rpc-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  const configService: ConfigService = app.get(ConfigService);
-  const appPort: number = configService.get('APP_PORT');
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    transport: Transport.REDIS,
+    options: {
+      host: process.env.REDIS_HOST,
+      port: +process.env.REDIS_PORT,
+    },
+  });
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  const logger = new Logger('Main: user-service');
-  await app.listen(appPort, () => {
-    logger.debug(`HTTP Application is running on port : ${appPort}`);
-  });
+  app.useGlobalFilters(new Http2RpcExceptionFilter());
+
+  await app.listen()
 }
 bootstrap();
