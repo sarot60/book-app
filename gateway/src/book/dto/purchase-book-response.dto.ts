@@ -1,19 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 
-export class CreateBookResponseDto {
-  @ApiProperty({ example: { _id: '6376976bf3c64cf3426090fd', name: 'Bravo Hero' } })
+export class PurchaseBookResponseDto {
+  @ApiProperty({ example: { _id: '6376fa97ddca1ff8e46ca5a5' } })
   data: {
     _id: Types.ObjectId,
-    name: string,
   };
 
   @ApiProperty({ example: 200 })
   status: number;
 
-  @ApiProperty({ example: 'Create book successful.' })
+  @ApiProperty({ example: 'Purchase book successful.' })
   message: string;
 
   @ApiProperty({ example: null, nullable: true })
-  error: { [key: string]: any };
+  error: { [key: string]: any } | null;
 }
