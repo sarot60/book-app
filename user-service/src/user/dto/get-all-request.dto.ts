@@ -1,7 +1,16 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
+import { IGetAllRequest } from "../user.interface";
 
-export class GetAllRequestDto {
-  page?: number;
-  limit?: number;
-  search?: string;
+export class GetAllRequestDto implements IGetAllRequest {
+  @IsOptional()
+  @IsNumber()
+  page: number;
+
+  @IsOptional()
+  @IsNumber()
+  limit: number;
+
+  @IsOptional()
+  @IsString()
+  search: string;
 }

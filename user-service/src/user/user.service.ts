@@ -1,15 +1,21 @@
 import { HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, IGetAllResponse } from './user.interface';
+import { RegisteredLog, RegisteredLogDocument } from './schemas/registered-log.schema';
+import { LogedinLog, LogedinLogDocument } from './schemas/logedin-log.schema';
+import { GetAllRequestDto } from './dto/get-all-request.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(RegisteredLog.name) private registeredLogModel: Model<RegisteredLogDocument>,
+    @InjectModel(LogedinLog.name) private logedinLogModel: Model<LogedinLogDocument>,
     @Inject('BOOK_SERVICE') private bookServiceClient: ClientProxy,
   ) { }
 
@@ -18,13 +24,15 @@ export class UserService {
     return newUser.save();
   }
 
-  public async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  public async updateUser(id: Types.ObjectId, updateUserDto: UpdateUserDto): Promise<UserDocument> {
     const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
     if (!updatedUser) throw new NotFoundException('Invalid user');
     return updatedUser;
   }
 
-  public async getAllUser(page: number = 0, limit?: number, search?: string): Promise<{ users: User[], total: number }> {
+  public async getAllUser(payload: GetAllRequestDto): Promise<IGetAllResponse> {
+    let { page, limit, search } = payload;
+
     page = +page || 1;
     limit = +limit;
 
@@ -47,7 +55,15 @@ export class UserService {
 
     const total = await this.userModel.count(filters);
 
-    return { users, total };
+    return {
+      data: {
+        users,
+        total,
+      },
+      message: 'Get books Successful',
+      status: HttpStatus.OK,
+      error: null,
+    };
   }
 
   public async getUserById(id: string): Promise<User> {
@@ -56,7 +72,7 @@ export class UserService {
     return user;
   }
 
-  public async getUserPasswordById(id: string): Promise<User> {
+  public async getUserPasswordById(id: Types.ObjectId): Promise<User> {
     const user = await this.userModel.findById(id, { password: 1 }).exec();
     if (!user) throw new NotFoundException('Invalid user');
     return user;
@@ -68,8 +84,8 @@ export class UserService {
     return user;
   }
 
-  public async updatePassword(id: string, password: string) {
-    const updatedUser = await this.userModel.updateOne({ _id: id }, { password }).exec();
+  public async updatePassword(userId: Types.ObjectId, hashedPassword: string) {
+    const updatedUser = await this.userModel.updateOne({ _id: userId }, { password: hashedPassword }).exec();
     if (updatedUser.matchedCount === 0) throw new NotFoundException('Invalid user');
     return updatedUser;
   }
@@ -82,5 +98,13 @@ export class UserService {
       error: null,
       message: ['Deleted successful.']
     }
+  }
+
+  public async createRegistedLog(data: ICreateRegisteredLogRequest): Promise<void> {
+    await new this.registeredLogModel(data).save();
+  }
+
+  public async createLogedinLog(data: ICreateLogedinLogRequest): Promise<void> {
+    await new this.logedinLogModel(data).save();
   }
 }

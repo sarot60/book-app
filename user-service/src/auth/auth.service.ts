@@ -2,7 +2,7 @@ import { HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedExceptio
 import { ConfigService } from "@nestjs/config";
 import { CreateUserDto } from "src/user/dto/create-user.dto";
 import { Role } from "src/user/role.enum";
-import { ICreateLogedinLog, ICreateRegisteredLog } from "../user/user.interface";
+import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest } from "../user/user.interface";
 import { UserService } from "src/user/user.service";
 import { AuthHelper } from "./helpers/auth.helper";
 import { LoginLimitHelper } from "./helpers/login-limit.helper";
@@ -31,7 +31,7 @@ export class AuthService {
 
     const newUser: any = await this.userService.createUser(payload);
 
-    const registeredLogData: ICreateRegisteredLog = {
+    const registeredLogData: ICreateRegisteredLogRequest = {
       userId: newUser._id,
       username: newUser.username,
       firstName: newUser.firstName,
@@ -70,7 +70,7 @@ export class AuthService {
 
     await this.loginLimitHelper.deleteLoginFailedCountFromCache(reqIp);
 
-    const loginLogData: ICreateLogedinLog = {
+    const loginLogData: ICreateLogedinLogRequest = {
       userId: user._id,
       username: user.username,
       firstName: user.firstName,

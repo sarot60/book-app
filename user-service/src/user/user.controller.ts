@@ -9,6 +9,7 @@ import { GetAllRequestDto } from "./dto/get-all-request.dto";
 import { AuthHelper } from "src/auth/helpers/auth.helper";
 import { ConfigService } from "@nestjs/config";
 import { UpdateUserRequestDto } from "./dto/update-user-request.dto";
+import { IGetAllResponse } from "./user.interface";
 
 @Controller('user')
 export class UserController {
@@ -26,14 +27,13 @@ export class UserController {
   }
 
   @MessagePattern({ service: 'user', cmd: 'get-all' })
-  private async getAllUser(@Payload() payload: GetAllRequestDto): Promise<{ users: User[], total: number }> {
-    const { page, limit, search } = payload;
-    return await this.userService.getAllUser(page, limit, search);
+  private async getAllUser(@Payload() payload: GetAllRequestDto): Promise<IGetAllResponse> {
+    return await this.userService.getAllUser(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'update' })
   private async updateUser(@Payload() payload: UpdateUserRequestDto): Promise<any> {
-    const id: string = payload.id;
+    const id: any = payload.id;
     const body: UpdateUserDto = payload.body;
     return await this.userService.updateUser(id, body);
   }
@@ -46,5 +46,15 @@ export class UserController {
   @MessagePattern({ service: 'user', cmd: 'delete' })
   private async deleteUser(@Payload() id: string): Promise<any> {
     return await this.userService.deleteUser(id);
+  }
+
+  @MessagePattern({ service: 'user', cmd: 'report-login-count' })
+  private async reportUserLoginCount() {
+
+  }
+
+  @MessagePattern({ service: 'user', cmd: 'report-registered' })
+  private async reportUserRegistered() {
+
   }
 }
