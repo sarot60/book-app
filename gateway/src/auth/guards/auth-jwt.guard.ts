@@ -1,6 +1,7 @@
-import { Injectable, CanActivate, ExecutionContext, HttpStatus, UnauthorizedException, Inject, BadGatewayException, BadRequestException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, HttpStatus, UnauthorizedException, Inject } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
+import { ValidateTokenResponseDto } from '../dto/validate-token-response.dto';
 
 @Injectable()
 export class AuthJwtGuard implements CanActivate {
@@ -23,13 +24,18 @@ export class AuthJwtGuard implements CanActivate {
 
     const token: string = bearer[1];
 
-    const dataToken = await this.authService.validateToken(token);
+    const dataToken: ValidateTokenResponseDto = await this.authService.validateToken(token);
     const data = dataToken.data;
-    
-    const {_id, username, banned, roles } = data;
+
+    if (!data) {
+      throw new UnauthorizedException();
+      // throw new UnauthorizedException(dataToken.message);
+    }
+
+    const { _id, username, banned, roles } = data;
     const status = dataToken.status
 
-    req.user = { _id, username, banned, roles};
+    req.user = { _id, username, banned, roles };
 
     if (status !== HttpStatus.OK) {
       throw new UnauthorizedException();
