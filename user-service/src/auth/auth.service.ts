@@ -7,10 +7,11 @@ import { UserService } from "src/user/user.service";
 import { AuthHelper } from "./helpers/auth.helper";
 import { LoginLimitHelper } from "./helpers/login-limit.helper";
 import { LoginRequestDto } from "./dto/login-request.dto";
-import { IBanResponse, ICancelBanResponse, IChangePasswordResponse, ILoginResponse, IRegisterResponse } from "./auth.interface";
+import { IBanResponse, ICancelBanResponse, IChangePasswordResponse, ILoginResponse, IRegisterResponse, IValidateTokenResponse } from "./auth.interface";
 import { ChangePasswordRequestDto } from "./dto/change-password-request.dto";
 import { BanRequestDto } from "./dto/ban-request.dto";
 import { CancelBanRequestDto } from "./dto/cancel-ban-request.dto";
+import { ValidateTokenRequestDto } from "./dto/validate-token-request.dto";
 
 @Injectable()
 export class AuthService {
@@ -111,26 +112,41 @@ export class AuthService {
     }
   }
 
-  public async validateToken(token: string) {
+  public async validateToken(payload: ValidateTokenRequestDto): Promise<IValidateTokenResponse> {
+    const { token } = payload;
+
     const decoded = await this.authHelper.verify(token);
 
     if (!decoded) {
-      return { status: HttpStatus.FORBIDDEN, error: ['Token is invalid'], _id: null };
+      return {
+        data: null,
+        status: HttpStatus.FORBIDDEN,
+        error: { msg: 'Token is invalid' },
+        message: 'Token is invalid',
+      };
     }
 
     const auth = await this.authHelper.validateUser(decoded);
 
     if (!auth) {
-      return { status: HttpStatus.CONFLICT, error: ['User not found'], _id: null };
+      return {
+        data: null,
+        status: HttpStatus.CONFLICT,
+        error: { msg: 'User not found' },
+        message: 'User not found',
+      };
     }
 
     return {
+      data: {
+        _id: decoded._id,
+        username: auth.username,
+        roles: auth.roles,
+        banned: auth.banned,
+      },
       status: HttpStatus.OK,
       error: null,
-      _id: decoded._id,
-      username: auth.username,
-      roles: auth.roles,
-      banned: auth.banned,
+      message: 'Get token successful'
     };
   }
 

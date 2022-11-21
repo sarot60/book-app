@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { Role } from "src/user/role.enum";
 
 export interface ILoginRequest {
   username: string;
@@ -9,7 +10,7 @@ export interface ILoginRequest {
 export interface ILoginResponse {
   data: {
     accessToken: string,
-  };
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -24,7 +25,7 @@ export interface IChangePasswordRequest {
 export interface IChangePasswordResponse {
   data: {
     userId: Types.ObjectId,
-  };
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -34,7 +35,7 @@ export interface IRegisterResponse {
   data: {
     userId: Types.ObjectId,
     username: string;
-  };
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -47,7 +48,7 @@ export interface IBanRequest {
 export interface IBanResponse {
   data: {
     userId: Types.ObjectId,
-  };
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -60,7 +61,23 @@ export interface ICancelBanRequest {
 export interface ICancelBanResponse {
   data: {
     userId: Types.ObjectId,
-  };
+  } | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface IValidateTokenRequest {
+  token: string;
+}
+
+export interface IValidateTokenResponse {
+  data: {
+    _id: Types.ObjectId,
+    username: string,
+    roles: Role[],
+    banned: boolean,
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;

@@ -4,10 +4,11 @@ import { LoginLimitGuard } from "./guards/login-limit.guard";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../user/dto/create-user.dto";
 import { LoginRequestDto } from "./dto/login-request.dto";
-import { IBanResponse, ICancelBanResponse, IChangePasswordResponse, ILoginResponse, IRegisterResponse } from "./auth.interface";
+import { IBanResponse, ICancelBanResponse, IChangePasswordResponse, ILoginResponse, IRegisterResponse, IValidateTokenResponse } from "./auth.interface";
 import { ChangePasswordRequestDto } from "./dto/change-password-request.dto";
 import { BanRequestDto } from "./dto/ban-request.dto";
 import { CancelBanRequestDto } from "./dto/cancel-ban-request.dto";
+import { ValidateTokenRequestDto } from "./dto/validate-token-request.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -40,7 +41,7 @@ export class AuthController {
   }
 
   @MessagePattern({ service: 'user', cmd: 'validate-token' })
-  private async validateToken(@Payload() payload: string) {
+  private async validateToken(@Payload() payload: ValidateTokenRequestDto): Promise<IValidateTokenResponse> {
     return this.authService.validateToken(payload);
   }
 }
