@@ -1,14 +1,19 @@
 import { Body, Controller, HttpCode, Inject, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiQuery, ApiUnauthorizedResponse, ApiNotFoundResponse } from '@nestjs/swagger';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { MapExceptionFromRpc } from '../common/map-exception-from-rpc-to-http';
 import { Request } from 'express';
 import { AuthJwtGuard } from './guards/auth-jwt.guard';
-import { LoginDto, ChangePasswordDto, RegisterDto } from './auth.dto';
 import { Role } from './roles.enum';
 import { Roles } from './roles.decorator';
 import { RolesGuard } from './guards/auth-roles.guard';
+import { LoginRequestDto } from './dto/login-request.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
+import { ChangePasswordResponseDto } from './dto/change-password-response.dto';
+import { ChangePasswordRequestDto } from './dto/change-password-request.dto';
+import { RegisterRequestDto } from './dto/register-request.dto';
+import { RegisterResponseDto } from './dto/register-response.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -16,42 +21,43 @@ export class AuthController {
   constructor(@Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy) { }
 
   @Post('register')
-  private async register(@Body() body: RegisterDto) {
-    const newUser = await firstValueFrom(this.userServiceClient
-      .send({ service: 'user', cmd: 'register' }, body)
+  @ApiOkResponse({ type: RegisterResponseDto })
+  private async register(@Body() request: RegisterRequestDto): Promise<RegisterResponseDto> {
+    const registerResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'register' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
 
-    return newUser;
+    return registerResponse;
   }
 
   @HttpCode(200)
   @Post('login')
-  private async login(@Body() body: LoginDto, @Req() req: Request) {
-    const request = {
-      username: body.username,
-      password: body.password,
-      ip: req.ip
-    };
+  @ApiOkResponse({ type: LoginResponseDto })
+  @ApiNotFoundResponse()
+  private async login(@Body() body: LoginRequestDto, @Req() req: Request): Promise<LoginResponseDto> {
+    const request: LoginRequestDto = { username: body.username, password: body.password, clientIp: req.ip };
 
-    const accessToken = await firstValueFrom(this.userServiceClient
+    const loginResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'login' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
 
-    return accessToken;
+    return loginResponse;
   }
 
   @Put('change-password')
   @Roles(Role.Admin, Role.User)
   @UseGuards(AuthJwtGuard, RolesGuard)
-  private async changePassword(@Body() body: ChangePasswordDto) {
-    const msg = await firstValueFrom(this.userServiceClient
-      .send({ service: 'user', cmd: 'change-password' }, body)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: ChangePasswordResponseDto })
+  private async changePassword(@Body() request: ChangePasswordRequestDto): Promise<ChangePasswordResponseDto> {
+    const changePasswordResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'change-password' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
 
-    return msg;
+    return changePasswordResponse;
   }
 
   @Put('ban/:id')
