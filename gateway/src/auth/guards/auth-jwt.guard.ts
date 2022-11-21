@@ -23,7 +23,11 @@ export class AuthJwtGuard implements CanActivate {
 
     const token: string = bearer[1];
 
-    const { status, _id, username, banned, roles } = await this.authService.validateToken(token);
+    const dataToken = await this.authService.validateToken(token);
+    const data = dataToken.data;
+    
+    const {_id, username, banned, roles } = data;
+    const status = dataToken.status
 
     req.user = { _id, username, banned, roles};
 
