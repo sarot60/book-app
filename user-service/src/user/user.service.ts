@@ -5,12 +5,13 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, IDeleteUserResponse, IGetAllResponse, IGetUserByIdRequest, IGetUserByIdResponse } from './user.interface';
+import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, IDeleteUserResponse, IGetAllResponse, IGetUserByIdRequest, IGetUserByIdResponse, IUpdateUserResponse } from './user.interface';
 import { RegisteredLog, RegisteredLogDocument } from './schemas/registered-log.schema';
 import { LogedinLog, LogedinLogDocument } from './schemas/logedin-log.schema';
 import { GetAllRequestDto } from './dto/get-all-request.dto';
 import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
 import { DeleteUserRequestDto } from './dto/delete-user-request.dto';
+import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 
 @Injectable()
 export class UserService {
@@ -26,8 +27,27 @@ export class UserService {
     return newUser.save();
   }
 
-  public async updateUser(id: Types.ObjectId, updateUserDto: UpdateUserDto): Promise<UserDocument> {
-    const updatedUser = await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
+  public async updateUser(payload: UpdateUserRequestDto): Promise<IUpdateUserResponse> {
+    const _id = payload._id;
+
+    const findUser = await this.userModel.findById(_id, { _id: 1 });
+    if (!findUser) throw new NotFoundException('Invalid user');
+
+    const checkUserExists = await this.userModel.findOne({ username: payload.username, _id: { $ne: _id } }, { _id: 1 });
+    if (checkUserExists) throw new NotFoundException('username is already taken');
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(_id, payload, { new: true });
+
+    return {
+      data: updatedUser,
+      message: 'Update user Successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
+  }
+
+  public async localUpdateUser(_id: Types.ObjectId, updateUserDto: UpdateUserDto): Promise<UserDocument> {
+    const updatedUser = await this.userModel.findByIdAndUpdate(_id, updateUserDto, { new: true });
     if (!updatedUser) throw new NotFoundException('Invalid user');
     return updatedUser;
   }

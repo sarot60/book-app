@@ -42,6 +42,13 @@ export interface IDeleteUserResponse {
   error: { [key: string]: any } | null;
 }
 
+export interface IUpdateUserResponse {
+  data: User | UserDocument | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
 export interface ICreateRegisteredLogRequest {
   userId: Types.ObjectId;
   username: string;

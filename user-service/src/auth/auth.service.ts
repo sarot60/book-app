@@ -152,7 +152,7 @@ export class AuthService {
 
   public async banTheUser(payload: BanRequestDto): Promise<IBanResponse> {
     const userId = payload.userId;
-    const banned = await this.userService.updateUser(userId, { banned: true });
+    const banned = await this.userService.localUpdateUser(userId, { banned: true });
     if (!banned) throw new NotFoundException('Invalid user');
     return {
       data: {
@@ -166,7 +166,7 @@ export class AuthService {
 
   public async cancelBanTheUser(payload: CancelBanRequestDto): Promise<ICancelBanResponse> {
     const userId = payload.userId;
-    const banned = await this.userService.updateUser(userId, { banned: false });
+    const banned = await this.userService.localUpdateUser(userId, { banned: false });
     if (!banned) throw new NotFoundException('Invalid user');
     return {
       data: {

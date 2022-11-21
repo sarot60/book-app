@@ -4,12 +4,11 @@ import { Body, Controller, Delete, Get, HttpStatus, Inject, NotFoundException, P
 import { MessagePattern, Payload, Ctx, RedisContext, RpcException } from '@nestjs/microservices';
 import { User } from "./schemas/user.schema";
 import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
 import { GetAllRequestDto } from "./dto/get-all-request.dto";
 import { AuthHelper } from "src/auth/helpers/auth.helper";
 import { ConfigService } from "@nestjs/config";
 import { UpdateUserRequestDto } from "./dto/update-user-request.dto";
-import { IDeleteUserResponse, IGetAllResponse, IGetUserByIdResponse } from "./user.interface";
+import { IDeleteUserResponse, IGetAllResponse, IGetUserByIdResponse, IUpdateUserResponse } from "./user.interface";
 import { GetUserByIdRequestDto } from "./dto/get-user-by-id-request.dto";
 import { DeleteUserRequestDto } from "./dto/delete-user-request.dto";
 
@@ -34,10 +33,8 @@ export class UserController {
   }
 
   @MessagePattern({ service: 'user', cmd: 'update' })
-  private async updateUser(@Payload() payload: UpdateUserRequestDto): Promise<any> {
-    const id: any = payload.id;
-    const body: UpdateUserDto = payload.body;
-    return await this.userService.updateUser(id, body);
+  private async updateUser(@Payload() payload: UpdateUserRequestDto): Promise<IUpdateUserResponse> {
+    return await this.userService.updateUser(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'get-by-id' })
