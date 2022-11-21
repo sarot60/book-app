@@ -2,9 +2,13 @@ import { HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedExceptio
 import { ConfigService } from "@nestjs/config";
 import { CreateUserDto } from "src/user/dto/create-user.dto";
 import { Role } from "src/user/role.enum";
+import { ICreateLogedinLog, ICreateRegisteredLog } from "../user/user.interface";
 import { UserService } from "src/user/user.service";
 import { AuthHelper } from "./helpers/auth.helper";
 import { LoginLimitHelper } from "./helpers/login-limit.helper";
+import { LoginRequestDto } from "./dto/login-request.dto";
+import { IChangePasswordResponse, ILoginResponse, IRegisterResponse } from "./auth.interface";
+import { ChangePasswordRequestDto } from "./dto/change-password-request.dto";
 
 @Injectable()
 export class AuthService {
@@ -15,7 +19,7 @@ export class AuthService {
     @Inject(LoginLimitHelper) private readonly loginLimitHelper: LoginLimitHelper,
   ) { }
 
-  public async register(payload: CreateUserDto) {
+  public async register(payload: CreateUserDto): Promise<IRegisterResponse> {
     const hashedPassword = this.authHelper.encodePassword(payload.password + this.configService.get<string>('PASSWORD_SECRET'));
 
     payload.password = hashedPassword;
@@ -24,11 +28,29 @@ export class AuthService {
 
     const newUser: any = await this.userService.createUser(payload);
 
-    return newUser;
+    const registeredLogData: ICreateRegisteredLog = {
+      userId: newUser._id,
+      username: newUser.username,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+    };
+    await this.userService.createRegistedLog(registeredLogData);
+
+    return {
+      data: {
+        userId: newUser._id,
+        username: newUser.username,
+      },
+      status: HttpStatus.OK,
+      error: null,
+      message: "Register successful"
+    }
   }
 
-  public async login(body: any, reqIp: string): Promise<{ accessToken: string }> {
-    const { username, password } = body;
+  public async login(payload: LoginRequestDto): Promise<ILoginResponse> {
+    const { username, password } = payload;
+    const reqIp = payload.clientIp.split(':').join('/');
+
     const user: any = await this.userService.getUserByUsername(username);
 
     if (!user) {
@@ -45,28 +67,45 @@ export class AuthService {
 
     await this.loginLimitHelper.deleteLoginFailedCountFromCache(reqIp);
 
-    return { accessToken: this.authHelper.generateToken(user.username, user._id) };
+    const loginLogData: ICreateLogedinLog = {
+      userId: user._id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+    await this.userService.createLogedinLog(loginLogData);
+
+    return {
+      data: { accessToken: this.authHelper.generateToken(user.username, user._id) },
+      status: HttpStatus.OK,
+      error: null,
+      message: "Login successful"
+    }
   }
 
-  public async changePassword(_id: string, oldPassword: string, newPassword: string) {
-    const user: any = await this.userService.getUserPasswordById(_id);
+  public async changePassword(payload: ChangePasswordRequestDto): Promise<IChangePasswordResponse> {
+    const { userId, oldPassword, newPassword } = payload;
 
+    const user: any = await this.userService.getUserPasswordById(userId);
     if (!user) throw new NotFoundException('Invalid user');
 
     const isPasswordValid: boolean = this.authHelper.isPasswordValid(oldPassword + this.configService.get<string>('PASSWORD_SECRET'), user.password)
 
-    if (!isPasswordValid) throw new UnauthorizedException('old password is incorrect.');
+    if (!isPasswordValid) throw new UnauthorizedException('Old password is incorrect.');
 
     const hashedNewPassword = this.authHelper.encodePassword(newPassword + this.configService.get<string>('PASSWORD_SECRET'));
 
-    const updatedPassword = await this.userService.updatePassword(_id, hashedNewPassword);
+    const updatedPassword = await this.userService.updatePassword(userId, hashedNewPassword);
 
     if (updatedPassword.matchedCount === 0) new NotFoundException('Invalid user');
 
     return {
+      data: {
+        userId
+      },
       status: HttpStatus.OK,
       error: null,
-      message: ['Update password successful.']
+      message: 'Update password successful',
     }
   }
 

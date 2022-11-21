@@ -11,7 +11,7 @@ export class LoginLimitGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    const clientIp: string = request.ip.split(':').join('/');
+    const clientIp: string = request.clientIp.split(':').join('/');
 
     const cacheValue: number = await this.cacheManager.get<number>(`blockLogin-clientIp:${clientIp}`);
 

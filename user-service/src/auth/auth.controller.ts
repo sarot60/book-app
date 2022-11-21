@@ -1,32 +1,30 @@
 import { Controller, UseGuards } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 import { LoginLimitGuard } from "./guards/login-limit.guard";
-import { LoginDto } from "./dto/login.dto";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../user/dto/create-user.dto";
-import { ChangePasswordDto } from "./dto/change-password.dto";
+import { LoginRequestDto } from "./dto/login-request.dto";
+import { IChangePasswordResponse, ILoginResponse, IRegisterResponse } from "./auth.interface";
+import { ChangePasswordRequestDto } from "./dto/change-password-request.dto";
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @MessagePattern({ service: 'user', cmd: 'register' })
-  private async register(@Payload() payload: CreateUserDto) {
+  private async register(@Payload() payload: CreateUserDto): Promise<IRegisterResponse> {
     return this.authService.register(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'login' })
   @UseGuards(LoginLimitGuard)
-  private async login(@Payload() payload: LoginDto): Promise<{ accessToken: string }> {
-    const body = { username: payload.username, password: payload.password };
-    const clientIp: string = payload.ip.split(':').join('/');
-    return this.authService.login(body, clientIp);
+  private login(@Payload() payload: LoginRequestDto): Promise<ILoginResponse> {
+    return this.authService.login(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'change-password' })
-  private async changePassword(@Payload() payload: ChangePasswordDto) {
-    const { _id, oldPassword, newPassword } = payload;
-    return this.authService.changePassword(_id, oldPassword, newPassword);
+  private async changePassword(@Payload() payload: ChangePasswordRequestDto): Promise<IChangePasswordResponse> {
+    return this.authService.changePassword(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'ban' })
