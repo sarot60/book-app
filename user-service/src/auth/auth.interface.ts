@@ -30,14 +30,6 @@ export interface IChangePasswordResponse {
   error: { [key: string]: any } | null;
 }
 
-export interface IRegisterRequest {
-  username: string;
-  password: string;
-  passwordConfirm: string;
-  firstName: string;
-  lastName: string;
-}
-
 export interface IRegisterResponse {
   data: {
     userId: Types.ObjectId,
