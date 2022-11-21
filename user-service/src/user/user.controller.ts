@@ -9,8 +9,9 @@ import { GetAllRequestDto } from "./dto/get-all-request.dto";
 import { AuthHelper } from "src/auth/helpers/auth.helper";
 import { ConfigService } from "@nestjs/config";
 import { UpdateUserRequestDto } from "./dto/update-user-request.dto";
-import { IGetAllResponse, IGetUserByIdResponse } from "./user.interface";
+import { IDeleteUserResponse, IGetAllResponse, IGetUserByIdResponse } from "./user.interface";
 import { GetUserByIdRequestDto } from "./dto/get-user-by-id-request.dto";
+import { DeleteUserRequestDto } from "./dto/delete-user-request.dto";
 
 @Controller('user')
 export class UserController {
@@ -45,8 +46,8 @@ export class UserController {
   }
 
   @MessagePattern({ service: 'user', cmd: 'delete' })
-  private async deleteUser(@Payload() id: string): Promise<any> {
-    return await this.userService.deleteUser(id);
+  private async deleteUser(@Payload() payload: DeleteUserRequestDto): Promise<IDeleteUserResponse> {
+    return await this.userService.deleteUser(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'report-login-count' })

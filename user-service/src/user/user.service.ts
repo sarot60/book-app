@@ -5,11 +5,12 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, IGetAllResponse, IGetUserByIdRequest, IGetUserByIdResponse } from './user.interface';
+import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, IDeleteUserResponse, IGetAllResponse, IGetUserByIdRequest, IGetUserByIdResponse } from './user.interface';
 import { RegisteredLog, RegisteredLogDocument } from './schemas/registered-log.schema';
 import { LogedinLog, LogedinLogDocument } from './schemas/logedin-log.schema';
 import { GetAllRequestDto } from './dto/get-all-request.dto';
 import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
+import { DeleteUserRequestDto } from './dto/delete-user-request.dto';
 
 @Injectable()
 export class UserService {
@@ -103,13 +104,19 @@ export class UserService {
     return updatedUser;
   }
 
-  public async deleteUser(id: string): Promise<any> {
-    const deletedUser = await this.userModel.findByIdAndRemove(id);
+  public async deleteUser(payload: DeleteUserRequestDto): Promise<IDeleteUserResponse> {
+    const { userId } = payload;
+
+    const deletedUser = await this.userModel.findByIdAndRemove(userId);
     if (!deletedUser) throw new NotFoundException('Invalid user');
+
     return {
+      data: {
+        userId: deletedUser._id,
+      },
       status: HttpStatus.OK,
       error: null,
-      message: ['Deleted successful.']
+      message: 'Delete user successful'
     }
   }
 

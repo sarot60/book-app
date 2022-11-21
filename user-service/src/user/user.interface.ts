@@ -23,7 +23,20 @@ export interface IGetUserByIdRequest {
 }
 
 export interface IGetUserByIdResponse {
-  data: User | UserDocument;
+  data: User | UserDocument | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface IDeleteUserRequest {
+  userId: Types.ObjectId;
+}
+
+export interface IDeleteUserResponse {
+  data: {
+    userId: Types.ObjectId;
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
