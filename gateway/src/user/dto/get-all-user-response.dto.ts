@@ -1,4 +1,4 @@
-export class GetAllResponseDto {
+export class GetAllUserResponseDto {
   data: {
     users: any[],
     total: number,

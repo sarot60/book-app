@@ -1,18 +1,20 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, Put, Query, Res, UseFilters, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { catchError, firstValueFrom, of } from 'rxjs';
+import { CreateBookResponseDto } from 'src/book/dto/create-book-response.dto';
 import { AuthJwtGuard } from '../auth/guards/auth-jwt.guard';
 import { MapExceptionFromRpc } from '../common/map-exception-from-rpc-to-http';
+import { CreateUserRequestDto } from './dto/create-user-request.dto';
 import { DeleteUserRequestDto } from './dto/delete-user-request.dto';
 import { DeleteUserResponseDto } from './dto/delete-user-response.dto';
-import { GetAllResponseDto } from './dto/get-all-response.dto';
+import { GetAllUserRequestDto } from './dto/get-all-user-request.dto';
+import { GetAllUserResponseDto } from './dto/get-all-user-response.dto';
 import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
 import { GetUserByIdResponseDto } from './dto/get-user-by-id-response.dto';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 import { UpdateUserResponseDto } from './dto/update-user-response.dto';
-import { CreateUserRequestDto, GetAllRequestDto } from './user.dto';
 
 @Controller('user')
 @ApiTags('user')
@@ -21,24 +23,26 @@ export class UserController {
 
   @Post()
   @UseGuards(AuthJwtGuard)
-  private async createUser(@Body() request: CreateUserRequestDto) {
+  @ApiOkResponse({ type: CreateBookResponseDto })
+  private async createUser(@Body() request: CreateUserRequestDto): Promise<CreateBookResponseDto> {
     const createUserResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'create' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
+
     return createUserResponse;
   }
 
   @Get()
   @UseGuards(AuthJwtGuard)
   @ApiQuery({ name: 'search', required: false })
-  @ApiOkResponse({ type: GetAllResponseDto })
+  @ApiOkResponse({ type: GetAllUserRequestDto })
   private async getAllUser(
     @Query('page', ParseIntPipe) page: number,
     @Query('limit', ParseIntPipe) limit: number,
     @Query('search') search?: string,
-  ): Promise<GetAllRequestDto> {
-    const request: GetAllRequestDto = { page, limit, search };
+  ): Promise<GetAllUserResponseDto> {
+    const request: GetAllUserRequestDto = { page, limit, search };
 
     const getAllResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'get-all' }, request)
@@ -84,6 +88,7 @@ export class UserController {
       .send({ service: 'user', cmd: 'delete' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
+
     return deleteUserResponse;
   }
 

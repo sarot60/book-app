@@ -1,4 +1,4 @@
-import { Role } from "../auth/roles.enum";
+import { Role } from "../../auth/roles.enum";
 
 export class CreateUserRequestDto {
   username: string;
@@ -10,10 +10,4 @@ export class CreateUserRequestDto {
   banned: boolean = false;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export class GetAllRequestDto {
-  page: number;
-  limit: number;
-  search?: string;
 }
