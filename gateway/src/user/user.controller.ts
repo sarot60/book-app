@@ -92,15 +92,47 @@ export class UserController {
     return deleteUserResponse;
   }
 
+  @Get('purchased/total-book')
+  @UseGuards(AuthJwtGuard)
+  private async getTotalBookPurchasedByTheUser() {
+    const request = '';
+    const totalPurchasedBookResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'get-total-book-purchased-by-the-user' }, request)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+    return totalPurchasedBookResponse;
+  }
+
+  @Get('purchased/last-book')
+  @UseGuards(AuthJwtGuard)
+  private async getLastPurchasedBook() {
+    const request = '';
+    const lastPurchasedBookResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'get-last-purchased-book' }, request)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+    return lastPurchasedBookResponse;
+  }
+
   @Get('report/new-user')
   @UseGuards(AuthJwtGuard)
   private async getReportNewUser() {
-
+    const request = '';
+    const reportNewUserResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'report-registered' }, request)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+    return reportNewUserResponse;
   }
 
   @Get('report/user-login-count')
   @UseGuards(AuthJwtGuard)
   private async getReportUserLoginCount() {
-
+    const request = '';
+    const reportLoginCountResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'report-login-count' }, request)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+    return reportLoginCountResponse;
   }
 }

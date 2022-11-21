@@ -11,10 +11,10 @@ export class UpdateBookRequestDto {
   name: string;
 
   @ApiProperty({
-    example: 'Fantasy',
+    example: ['Fantasy', 'Action'],
   })
   @IsString()
-  category: string;
+  categories: string;
 
   @ApiProperty({ example: 100 })
   @IsNumber()

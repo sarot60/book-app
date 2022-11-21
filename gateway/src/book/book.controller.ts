@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Inject, NotAcceptableException, Param, ParseIntPipe, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Delete, Get, HttpStatus, Inject, NotAcceptableException, Param, ParseIntPipe, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CreateBookRequestDto } from './dto/create-book-request.dto';
@@ -17,6 +17,10 @@ import { DeleteBookResponseDto } from './dto/delete-book-response.dto';
 import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { UpdateBookResponseDto } from './dto/update-book.response.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
+import { ReportTopSellBookRequestDto } from './dto/report-top-sell-book-request.dto';
+import { ReportTopSellBookResponseDto } from './dto/report-top-sell-book-response.dto';
+import { ReportSellBookEachCategoryResponseDto } from './dto/report-sell-book-each-category-response.dto';
+import { ReportSellBookEachCategoryRequestDto } from './dto/report-sell-book-each-category-request.dto';
 
 @Controller('book')
 @ApiTags('book')
@@ -106,11 +110,50 @@ export class BookController {
     return purchaseBookResponse;
   }
 
-  private async reportTopSellBook() {
-
+  @Get('purchased/top-user')
+  @UseGuards(AuthJwtGuard)
+  private async getTopUserPurchasedBook() {
+    const request = '';
+    const topUserPurchasedBookResponse = await firstValueFrom(this.bookServiceClient
+      .send({ service: 'book', cmd: 'get-top-user-purchased' }, request)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+    return topUserPurchasedBookResponse;
   }
 
-  private async reportSellBookEachCategory() {
+  @Get('report/top-sell-book')
+  @UseGuards(AuthJwtGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: ReportTopSellBookResponseDto })
+  private async reportTopSellBook(
+    @Query('fullDate',) fullDate?: string,
+    @Query('day', new DefaultValuePipe(0), ParseIntPipe) day?: number,
+    @Query('month', new DefaultValuePipe(0), ParseIntPipe) month?: number,
+    @Query('year', new DefaultValuePipe(0), ParseIntPipe) year?: number,
+  ): Promise<ReportTopSellBookResponseDto> {
+    const request: ReportTopSellBookRequestDto = { fullDate, day, month, year };
+    const reportTopSellBookResponse = await firstValueFrom(this.bookServiceClient
+      .send({ service: 'book', cmd: 'report-top-sell' }, request)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+    return reportTopSellBookResponse;
+  }
 
+  @Get('report/sell-book-each-category')
+  @UseGuards(AuthJwtGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: ReportSellBookEachCategoryResponseDto })
+  private async reportSellBookEachCategory(
+    @Query('fullDate',) fullDate?: string,
+    @Query('day', new DefaultValuePipe(0), ParseIntPipe) day?: number,
+    @Query('month', new DefaultValuePipe(0), ParseIntPipe) month?: number,
+    @Query('year', new DefaultValuePipe(0), ParseIntPipe) year?: number,
+  ): Promise<ReportSellBookEachCategoryResponseDto> {
+    const request: ReportSellBookEachCategoryRequestDto = { fullDate, day, month, year };
+    const reportSellBookEachCategoryResponse = await firstValueFrom(this.bookServiceClient
+      .send({ service: 'book', cmd: 'report-sell-book-each-category' }, request)
+      .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
+    );
+    return reportSellBookEachCategoryResponse;
   }
 }

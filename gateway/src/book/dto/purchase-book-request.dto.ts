@@ -11,8 +11,8 @@ export class PurchaseBookRequestDto {
   @ApiProperty({ example: 'Bravo Hero' })
   bookName: string;
 
-  @ApiProperty({ example: 'Fantasy' })
-  category: string;
+  @ApiProperty({ example: ['Fantasy', 'Action'] })
+  categories: string;
 
   @ApiProperty({ example: 10 })
   quantity: number;
