@@ -1,5 +1,8 @@
 // init data for book app
 
+function randomDate(start, end) {
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
 
 // database users ==========================================================================
 db = db.getSiblingDB('users');
@@ -135,25 +138,23 @@ db.getCollection('users').insertMany(users);
 db.createCollection('registered_logs');
 db.createCollection('logedin_logs');
 
-// database books ==========================================================================
-db = db.getSiblingDB('books');
+// database books ==========================================================================================================================
 
-db.createCollection('books');
 
-const dracula_id = new ObjectId('637a88a9f15b44263668b923'); // book 1
-const eragon_id = new ObjectId('637a88a9f15b44263668b924'); // book 2
-const the_adventures_of_tom_sawyer_id = new ObjectId('637a88a9f15b44263668b925'); // book 3
-const peter_pan_id = new ObjectId('637a88a9f15b44263668b926'); // book 4
-const fallen_id = new ObjectId('637a88a9f15b44263668b927'); // book 5
-const interview_with_the_vampire_id = new ObjectId('637a88a9f15b44263668b928'); // book 6
-const legend_id = new ObjectId('637a88a9f15b44263668b929'); // book 7
-const dragonfly_in_amber_id = new ObjectId('637a88a9f15b44263668b92a'); // book 8
-const flowers_in_the_attic_id = new ObjectId('637a88a9f15b44263668b92b'); // book 9
-const the_ruins_of_gorlan_id = new ObjectId('637a88a9f15b44263668b92c'); // book 10
+const dracula_meta = { id: new ObjectId('637a88a9f15b44263668b923'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 1
+const eragon_meta = { id: new ObjectId('637a88a9f15b44263668b924'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 2
+const the_adventures_of_tom_sawyer_meta = { id: new ObjectId('637a88a9f15b44263668b925'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 3
+const peter_pan_meta = { id: new ObjectId('637a88a9f15b44263668b926'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 4
+const fallen_meta = { id: new ObjectId('637a88a9f15b44263668b927'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 5
+const interview_with_the_vampire_meta = { id: new ObjectId('637a88a9f15b44263668b928'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 6
+const legend_meta = { id: new ObjectId('637a88a9f15b44263668b929'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 7
+const dragonfly_in_amber_meta = { id: new ObjectId('637a88a9f15b44263668b92a'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 8
+const flowers_in_the_attic_meta = { id: new ObjectId('637a88a9f15b44263668b92b'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 9
+const the_ruins_of_gorlan_meta = { id: new ObjectId('637a88a9f15b44263668b92c'), createDate: randomDate(new Date(2015, 0, 1), new Date()) } // book 10
 
 const books = [
   { // book 1
-    '_id': dracula_id,
+    '_id': dracula_meta.id,
     'name': 'Dracula',
     'categories': [
       'Classics',
@@ -166,9 +167,11 @@ const books = [
     'price': 400.55,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': dracula_meta.createDate,
+    'updatedAt': dracula_meta.createDate,
   },
   { // book 2
-    '_id': eragon_id,
+    '_id': eragon_meta.id,
     'name': 'Eragon',
     'categories': [
       'Fantasy',
@@ -182,9 +185,11 @@ const books = [
     'price': 220.86,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': eragon_meta.createDate,
+    'updatedAt': eragon_meta.createDate,
   },
   { // book 3
-    '_id': the_adventures_of_tom_sawyer_id,
+    '_id': the_adventures_of_tom_sawyer_meta.id,
     'name': 'The Adventures of Tom Sawyer',
     'categories': [
       'Classics',
@@ -198,9 +203,11 @@ const books = [
     'price': 300.36,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': the_adventures_of_tom_sawyer_meta.createDate,
+    'updatedAt': the_adventures_of_tom_sawyer_meta.createDate,
   },
   { // book 4
-    '_id': peter_pan_id,
+    '_id': peter_pan_meta.id,
     'name': 'Peter Pan',
     'categories': [
       'Classics',
@@ -214,9 +221,11 @@ const books = [
     'price': 500.26,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': peter_pan_meta.createDate,
+    'updatedAt': peter_pan_meta.createDate,
   },
   { // book 5
-    '_id': fallen_id,
+    '_id': fallen_meta.id,
     'name': 'Fallen',
     'categories': [
       'Young Adult',
@@ -228,9 +237,11 @@ const books = [
     'price': 420.64,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': fallen_meta.createDate,
+    'updatedAt': fallen_meta.createDate,
   },
   { // book 6
-    '_id': interview_with_the_vampire_id,
+    '_id': interview_with_the_vampire_meta.id,
     'name': 'Interview with the Vampire',
     'categories': [
       'Horror',
@@ -243,9 +254,11 @@ const books = [
     'price': 207.66,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': interview_with_the_vampire_meta.createDate,
+    'updatedAt': interview_with_the_vampire_meta.createDate,
   },
   { // book 7
-    '_id': legend_id,
+    '_id': legend_meta.id,
     'name': 'Legend',
     'categories': [
       'Young Adult',
@@ -257,9 +270,11 @@ const books = [
     'price': 540.42,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': legend_meta.createDate,
+    'updatedAt': legend_meta.createDate,
   },
   { // book 8
-    '_id': dragonfly_in_amber_id,
+    '_id': dragonfly_in_amber_meta.id,
     'name': 'Dragonfly in Amber',
     'categories': [
       'Time Travel',
@@ -272,9 +287,11 @@ const books = [
     'price': 427.8,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': dragonfly_in_amber_meta.createDate,
+    'updatedAt': dragonfly_in_amber_meta.createDate,
   },
   { // book 9
-    '_id': flowers_in_the_attic_id,
+    '_id': flowers_in_the_attic_meta.id,
     'name': 'Flowers in the Attic',
     'categories': [
       'Fiction',
@@ -288,9 +305,11 @@ const books = [
     'price': 800.77,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': flowers_in_the_attic_meta.createDate,
+    'updatedAt': flowers_in_the_attic_meta.createDate,
   },
   { // book 10
-    '_id': the_ruins_of_gorlan_id,
+    '_id': the_ruins_of_gorlan_meta.id,
     'name': 'The Ruins of Gorlan',
     'categories': [
       'Action',
@@ -303,24 +322,39 @@ const books = [
     'price': 300.04,
     'sold': 0,
     'imageFileName': null,
+    'createdAt': the_ruins_of_gorlan_meta.createDate,
+    'updatedAt': the_ruins_of_gorlan_meta.createDate,
   }
 ];
 
-db.getCollection('books').insertMany(books);
 
-db.createCollection('purchase_books');
+const categories = [];
+const checkExists = [];
+
+for (let i = 0; i < books.length; i++) {
+
+  books[i].categories.forEach(cate => {
+    if (checkExists.indexOf(cate) === -1) {
+      categories.push({ 'name': cate, 'createdAt': new Date(), 'updatedAt': new Date() });
+      checkExists.push(cate);
+    }
+  });
+
+}
 
 const orders = [];
 
 for (let i = 0; i < 100; i++) {
   const randomUser = Math.floor(Math.random() * 10);
   const randomBook = Math.floor(Math.random() * 10);
-  const randomQuantity = Math.floor(Math.random() * 50) + 1;
+  const randomQuantity = Math.floor(Math.random() * 30) + 1;
 
   const book = books[randomBook];
   const user = users[randomUser];
 
   const price = book.price * randomQuantity;
+
+  const createDate = randomDate(new Date(2015, 0, 1), new Date());
 
   orders.push({
     'userId': user._id,
@@ -333,8 +367,24 @@ for (let i = 0; i < 100; i++) {
     'quantity': randomQuantity,
     'price': price,
     'bookPrice': book.price,
+    'createdAt': createDate,
+    'updatedAt': createDate,
   });
+
+  // update stock
+  books[randomBook].stock -= randomQuantity;
+  // update sold
+  books[randomBook].sold += randomQuantity;
 
 }
 
+db = db.getSiblingDB('books');
+
+db.createCollection('books');
+db.getCollection('books').insertMany(books);
+
+db.createCollection('categories');
+db.getCollection('categories').insertMany(categories);
+
+db.createCollection('purchase_books');
 db.getCollection('purchase_books').insertMany(orders);
