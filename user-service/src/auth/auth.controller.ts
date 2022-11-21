@@ -2,7 +2,7 @@ import { Controller, UseGuards } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
 import { LoginLimitGuard } from "./guards/login-limit.guard";
 import { AuthService } from "./auth.service";
-import { CreateUserDto } from "../user/dto/create-user.dto";
+import { CreateUserRequestDto } from "../user/dto/create-user.dto";
 import { LoginRequestDto } from "./dto/login-request.dto";
 import { IBanResponse, ICancelBanResponse, IChangePasswordResponse, ILoginResponse, IRegisterResponse, IValidateTokenResponse } from "./auth.interface";
 import { ChangePasswordRequestDto } from "./dto/change-password-request.dto";
@@ -15,7 +15,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @MessagePattern({ service: 'user', cmd: 'register' })
-  private async register(@Payload() payload: CreateUserDto): Promise<IRegisterResponse> {
+  private async register(@Payload() payload: CreateUserRequestDto): Promise<IRegisterResponse> {
     return this.authService.register(payload);
   }
 

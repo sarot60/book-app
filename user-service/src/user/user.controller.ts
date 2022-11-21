@@ -3,12 +3,12 @@ import { UserService } from './user.service';
 import { Body, Controller, Delete, Get, HttpStatus, Inject, NotFoundException, Param, Post, Put, Query, Res, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import { MessagePattern, Payload, Ctx, RedisContext, RpcException } from '@nestjs/microservices';
 import { User } from "./schemas/user.schema";
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserRequestDto } from "./dto/create-user.dto";
 import { GetAllRequestDto } from "./dto/get-all-request.dto";
 import { AuthHelper } from "src/auth/helpers/auth.helper";
 import { ConfigService } from "@nestjs/config";
 import { UpdateUserRequestDto } from "./dto/update-user-request.dto";
-import { IDeleteUserResponse, IGetAllResponse, IGetUserByIdResponse, IUpdateUserResponse } from "./user.interface";
+import { ICreateUserResponse, IDeleteUserResponse, IGetAllResponse, IGetUserByIdResponse, IUpdateUserResponse } from "./user.interface";
 import { GetUserByIdRequestDto } from "./dto/get-user-by-id-request.dto";
 import { DeleteUserRequestDto } from "./dto/delete-user-request.dto";
 
@@ -21,10 +21,12 @@ export class UserController {
   ) { }
 
   @MessagePattern({ service: 'user', cmd: 'create' })
-  private async createUser(@Payload() createUserDto: CreateUserDto): Promise<User> {
-    const hashedPassword = this.authHelper.encodePassword(createUserDto.password + this.configService.get<string>('PASSWORD_SECRET'));
-    createUserDto.password = hashedPassword;
-    return await this.userService.createUser(createUserDto);
+  private async createUser(@Payload() payload: CreateUserRequestDto): Promise<ICreateUserResponse> {
+
+    const hashedPassword = this.authHelper.encodePassword(payload.password + this.configService.get<string>('PASSWORD_SECRET'));
+    payload.password = hashedPassword;
+
+    return await this.userService.createUser(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'get-all' })

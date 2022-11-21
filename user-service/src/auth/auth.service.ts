@@ -1,6 +1,6 @@
 import { HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { CreateUserDto } from "src/user/dto/create-user.dto";
+import { CreateUserRequestDto } from "src/user/dto/create-user.dto";
 import { Role } from "src/user/role.enum";
 import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest } from "../user/user.interface";
 import { UserService } from "src/user/user.service";
@@ -22,7 +22,7 @@ export class AuthService {
     @Inject(LoginLimitHelper) private readonly loginLimitHelper: LoginLimitHelper,
   ) { }
 
-  public async register(payload: CreateUserDto): Promise<IRegisterResponse> {
+  public async register(payload: CreateUserRequestDto): Promise<IRegisterResponse> {
     const hashedPassword = this.authHelper.encodePassword(payload.password + this.configService.get<string>('PASSWORD_SECRET'));
 
     payload.password = hashedPassword;

@@ -2,6 +2,25 @@ import { Types } from "mongoose";
 import { Role } from "./role.enum";
 import { User, UserDocument } from "./schemas/user.schema";
 
+export interface ICreateUserRequest {
+  username: string;
+  password: string;
+  passwordConfirm: string;
+  firstName: string;
+  lastName: string;
+  roles: Role[];
+  banned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ICreateUserResponse {
+  data: User | UserDocument | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
 export interface IGetAllRequest {
   page: number;
   limit: number;

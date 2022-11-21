@@ -1,11 +1,11 @@
-import { HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserRequestDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, IDeleteUserResponse, IGetAllResponse, IGetUserByIdRequest, IGetUserByIdResponse, IUpdateUserResponse } from './user.interface';
+import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, ICreateUserResponse, IDeleteUserResponse, IGetAllResponse, IGetUserByIdRequest, IGetUserByIdResponse, IUpdateUserResponse } from './user.interface';
 import { RegisteredLog, RegisteredLogDocument } from './schemas/registered-log.schema';
 import { LogedinLog, LogedinLogDocument } from './schemas/logedin-log.schema';
 import { GetAllRequestDto } from './dto/get-all-request.dto';
@@ -22,9 +22,20 @@ export class UserService {
     @Inject('BOOK_SERVICE') private bookServiceClient: ClientProxy,
   ) { }
 
-  public async createUser(createUserDto: CreateUserDto): Promise<User> {
-    const newUser = new this.userModel(createUserDto);
-    return newUser.save();
+  public async createUser(payload: CreateUserRequestDto): Promise<ICreateUserResponse> {
+    const newUser = new this.userModel(payload);
+    await newUser.save();
+
+    if (!newUser) {
+      throw new ConflictException('Create user error.');
+    }
+
+    return {
+      data: newUser,
+      message: 'Create user successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
   }
 
   public async updateUser(payload: UpdateUserRequestDto): Promise<IUpdateUserResponse> {
@@ -106,15 +117,14 @@ export class UserService {
     return user;
   }
 
-  public async getUserPasswordById(id: Types.ObjectId): Promise<User> {
+  public async getUserPasswordById(id: Types.ObjectId): Promise<UserDocument> {
     const user = await this.userModel.findById(id, { password: 1 }).exec();
     if (!user) throw new NotFoundException('Invalid user');
     return user;
   }
 
-  public async getUserByUsername(username: string): Promise<User> {
+  public async getUserByUsername(username: string): Promise<UserDocument> {
     const user = await this.userModel.findOne({ username }).exec();
-    if (!user) throw new NotFoundException('Invalid user');
     return user;
   }
 

@@ -13,8 +13,9 @@ import {
 import { Match } from '../validators/match.validator';
 import { UserExists } from '../validators/user-exists.validator';
 import { Role } from '../role.enum';
+import { ICreateUserRequest } from '../user.interface';
 
-export class CreateUserDto {
+export class CreateUserRequestDto implements ICreateUserRequest {
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
