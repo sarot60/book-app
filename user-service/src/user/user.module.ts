@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './schemas/user.schema';
 import { UserExistsRule } from './validators/user-exists.validator';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { AuthHelper } from '../auth/helpers/auth.helper';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { User, UserSchema } from './schemas/user.schema';
 import { RegisteredLog, RegisteredLogSchema } from './schemas/registered-log.schema';
 import { LogedinLog, LogedinLogSchema } from './schemas/logedin-log.schema';
+import { AuthHelper } from '../auth/helpers/auth.helper';
 
 @Module({
   imports: [
@@ -18,14 +19,18 @@ import { LogedinLog, LogedinLogSchema } from './schemas/logedin-log.schema';
       { name: LogedinLog.name, schema: LogedinLogSchema },
       { name: RegisteredLog.name, schema: RegisteredLogSchema },
     ]),
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'BOOK_SERVICE',
-        transport: Transport.REDIS,
-        options: {
-          host: process.env.REDIS_HOST,
-          port: +process.env.REDIS_PORT,
-        }
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.REDIS,
+          options: {
+            host: configService.get<string>('REDIS_HOST'),
+            port: configService.get<number>('REDIS_PORT'),
+          }
+        }),
+        inject: [ConfigService],
       },
     ]),
     JwtModule.registerAsync({
@@ -35,7 +40,7 @@ import { LogedinLog, LogedinLogSchema } from './schemas/logedin-log.schema';
         signOptions: { expiresIn: configService.get<string>('JWT_EXPIRE') },
       }),
       inject: [ConfigService],
-    })
+    }),
   ],
   providers: [UserService, UserExistsRule, AuthHelper],
   controllers: [UserController],
