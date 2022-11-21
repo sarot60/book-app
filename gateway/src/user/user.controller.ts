@@ -5,6 +5,8 @@ import { Types } from 'mongoose';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { AuthJwtGuard } from '../auth/guards/auth-jwt.guard';
 import { MapExceptionFromRpc } from '../common/map-exception-from-rpc-to-http';
+import { DeleteUserRequestDto } from './dto/delete-user-request.dto';
+import { DeleteUserResponseDto } from './dto/delete-user-response.dto';
 import { GetAllResponseDto } from './dto/get-all-response.dto';
 import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
 import { GetUserByIdResponseDto } from './dto/get-user-by-id-response.dto';
@@ -58,7 +60,7 @@ export class UserController {
   @UseGuards(AuthJwtGuard)
   @ApiOkResponse({ type: GetUserByIdResponseDto })
   private async getUserById(@Param('id') userId: Types.ObjectId): Promise<GetUserByIdResponseDto> {
-    const request:GetUserByIdRequestDto = { userId }
+    const request: GetUserByIdRequestDto = { userId }
     const user = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'get-by-id' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
@@ -68,12 +70,15 @@ export class UserController {
 
   @Delete(':id')
   @UseGuards(AuthJwtGuard)
-  private async deleteUser(@Param('id') id: string): Promise<any> {
-    const delUserMsg = await firstValueFrom(this.userServiceClient
-      .send({ service: 'user', cmd: 'delete' }, id)
+  @ApiOkResponse({ type: DeleteUserResponseDto })
+  private async deleteUser(@Param('id') userId: Types.ObjectId): Promise<DeleteUserResponseDto> {
+    const request: DeleteUserRequestDto = { userId };
+
+    const deleteUserResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'delete' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
-    return delUserMsg;
+    return deleteUserResponse;
   }
 
   @Get('report/new-user')
