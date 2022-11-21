@@ -49,13 +49,29 @@ export class UserController {
     return await this.userService.deleteUser(payload);
   }
 
+  @MessagePattern({ service: 'user', cmd: 'get-total-book-purchased-by-the-user' })
+  private async getTotalBookPurchasedByTheUser() {
+    return await this.userService.getTotalBookPurchasedByTheUser();
+  }
+
+  @MessagePattern({ service: 'user', cmd: 'get-last-purchased-book' })
+  private async getLastPurchasedBook() {
+    return await this.userService.getLastPurchasedBook();
+  }
+
   @MessagePattern({ service: 'user', cmd: 'report-login-count' })
   private async reportUserLoginCount() {
-
+    return await this.userService.reportUserLoginCount();
   }
 
   @MessagePattern({ service: 'user', cmd: 'report-registered' })
   private async reportUserRegistered() {
+    return await this.userService.reportUserRegistered();
+  }
 
+  // send to book service
+  @MessagePattern({ service: 'user', cmd: 'get-all-top-user' })
+  private async getAllTopUser() {
+    return await this.userService.getAllTopUser();
   }
 }

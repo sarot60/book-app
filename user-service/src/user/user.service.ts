@@ -12,6 +12,7 @@ import { GetAllRequestDto } from './dto/get-all-request.dto';
 import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
 import { DeleteUserRequestDto } from './dto/delete-user-request.dto';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class UserService {
@@ -156,5 +157,62 @@ export class UserService {
 
   public async createLogedinLog(data: ICreateLogedinLogRequest): Promise<void> {
     await new this.logedinLogModel(data).save();
+  }
+
+  public async getTotalBookPurchasedByTheUser() {
+    const users = await this.userModel.find({}, { _id: 1, username: 1, firstName: 1, lastName: 1 })
+
+    const purchasedTotalPerUser = await firstValueFrom(this.bookServiceClient.send({ service: 'book', cmd: 'get-total-book-purchase' }, ''));
+
+    const totalPurchase: any[] = [];
+    users.forEach(u => {
+      let purchase = purchasedTotalPerUser.find((pur: any) => pur.userId === u._id.toString());
+      if (purchase) {
+        totalPurchase.push({
+          _id: u._id,
+          purchasedQuantity: purchase.totalQuantity,
+          username: u.username,
+          firstName: u.firstName,
+          lastName: u.lastName,
+        });
+      }
+    })
+
+    return totalPurchase;
+  }
+
+  public async getLastPurchasedBook() {
+    const users = await this.userModel.find({}, { _id: 1, username: 1, firstName: 1, lastName: 1 })
+
+    const lastPurchasedBook = await firstValueFrom(this.bookServiceClient.send({ service: 'book', cmd: 'get-last-purchase-book' }, ''));
+
+    const lastPurchase: any[] = [];
+    users.forEach(u => {
+      let purchase = lastPurchasedBook.find((pur: any) => pur.userId === u._id.toString());
+      if (purchase) {
+        lastPurchase.push({
+          _id: u._id,
+          lastPurchase: purchase.lastPurchase,
+          username: u.username,
+          firstName: u.firstName,
+          lastName: u.lastName,
+        });
+      }
+    })
+
+    return lastPurchase;
+  }
+
+  public async reportUserLoginCount() {
+    return await this.logedinLogModel.count();
+  }
+
+  public async reportUserRegistered() {
+    return await this.registeredLogModel.find({}).sort({ createdAt: -1 });
+  }
+
+  // send to book service
+  public async getAllTopUser() {
+    return await this.userModel.find({}, { password: 0, roles: 0, banned: 0, createdAt: 0, updatedAt: 0 })
   }
 }
