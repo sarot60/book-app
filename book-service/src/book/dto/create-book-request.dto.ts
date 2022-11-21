@@ -5,6 +5,7 @@ import {
   MaxLength,
   IsNotEmpty,
   IsOptional,
+  IsArray,
 } from 'class-validator';
 import { ICreateBookRequest } from '../book.interface';
 
@@ -14,9 +15,9 @@ export class CreateBookRequestDto implements ICreateBookRequest{
   @MaxLength(30)
   name: string;
 
-  @IsString()
+  @IsArray()
   @IsNotEmpty()
-  category: string;
+  categories: string[];
 
   @IsNumber()
   stock: number;

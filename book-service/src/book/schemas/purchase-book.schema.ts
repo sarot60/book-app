@@ -18,8 +18,8 @@ export class PurchaseBook {
   @Prop({ type: String })
   bookName: string;
 
-  @Prop({ type: String })
-  category: string;
+  @Prop({ type: Array })
+  categories: string[];
 
   @Prop({ type: Number })
   quantity: number;

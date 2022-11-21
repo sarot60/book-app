@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 export interface ICreateBookRequest {
   name: string;
-  category: string
+  categories: string[];
   stock: number;
   price: number;
   sold: number;
@@ -75,7 +75,7 @@ export interface IPurchaseBookRequest {
   userId: Types.ObjectId;
   bookId: Types.ObjectId;
   bookName: string;
-  category: string;
+  categories: string[];
   quantity: number;
   price: number;
 }
@@ -84,6 +84,34 @@ export interface IPurchaseBookResponse {
   data: {
     _id: Types.ObjectId,
   };
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface IReportTopSellBookRequest {
+  fullDate: string;
+  day: number;
+  month: number;
+  year: number;
+}
+
+export interface IReportTopSellBookResponse {
+  data: any[];
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface IReportSellBookEachCategoryRequest {
+  fullDate: string;
+  day: number;
+  month: number;
+  year: number;
+}
+
+export interface IReportSellBookEachCategoryResponse {
+  data: any[];
   message: string;
   status: number;
   error: { [key: string]: any } | null;

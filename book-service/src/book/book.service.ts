@@ -1,21 +1,44 @@
-import { ConflictException, ForbiddenException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { InjectModel } from '@nestjs/mongoose';
+import {
+  Inject,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Model } from 'mongoose';
-import { ICreateBookResponse, IDeleteBookResponse, IGetAllBookResponse, IGetBookByIdResponse, IPurchaseBookResponse, IUpdateBookResponse } from './book.interface';
+import { ClientProxy } from '@nestjs/microservices';
+import { InjectModel } from '@nestjs/mongoose';
+
+import {
+  IUpdateBookResponse,
+  ICreateBookResponse,
+  IDeleteBookResponse,
+  IGetAllBookResponse,
+  IGetBookByIdResponse,
+  IPurchaseBookResponse,
+  IReportTopSellBookResponse,
+  IReportSellBookEachCategoryResponse,
+} from './book.interface';
+
 import { CreateBookRequestDto } from './dto/create-book-request.dto';
 import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { GetAllBookRequestDto } from './dto/get-all-book-request.dto';
 import { GetBookByIdRequestDto } from './dto/get-book-by-id.request.dto';
 import { PurchaseBookRequestDto } from './dto/purchase-book-request.dto';
+import { ReportSellBookEachCategoryRequestDto } from './dto/report-sell-book-each-category-response.dto';
+import { ReportTopSellBookRequestDto } from './dto/report-top-sell-book-request.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
 import { Book, BookDocument } from './schemas/book.schema';
 import { PurchaseBook, PurchaseBookDocument } from './schemas/purchase-book.schema';
+import { Category, CategoryDocument } from './schemas/category.schema';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class BookService {
   constructor(
     @InjectModel(Book.name) private readonly bookModel: Model<BookDocument>,
+    @InjectModel(Category.name) private readonly categoryModel: Model<CategoryDocument>,
     @InjectModel(PurchaseBook.name) private readonly purchaseBookModel: Model<PurchaseBookDocument>,
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
   ) { }
@@ -154,5 +177,137 @@ export class BookService {
       error: null,
       message: "Purchase book successful"
     }
+  }
+
+  public async reportTopSellBook(payload: ReportTopSellBookRequestDto): Promise<IReportTopSellBookResponse> {
+    const { fullDate, day, month, year }: ReportTopSellBookRequestDto = payload;
+
+    const filters: Record<string, any> = {};
+
+    if (fullDate) {
+      filters.createdAt = {
+        $gt: new Date(fullDate).setDate(new Date(fullDate).getDate()),
+        $lt: new Date(fullDate).setDate(new Date(fullDate).getDate() + 1)
+      };
+    } else if (day || month || year) {
+      const dayFilter = { $eq: [{ $dayOfMonth: "$createdAt" }, day] };
+      const monthFilter = { $eq: [{ $month: "$createdAt" }, month] };
+      const yearFilter = { $eq: [{ $year: "$createdAt" }, year] };
+
+      filters.$expr = { $and: [] };
+
+      if (day) filters.$expr.$and.push(dayFilter);
+      if (month) filters.$expr.$and.push(monthFilter);
+      if (year) filters.$expr.$and.push(yearFilter);
+    }
+
+    const topSellBook = await this.bookModel
+      .find(filters, { price: 0, stock: 0, imageFileName: 0 })
+      .sort({ sold: -1 })
+
+    return {
+      data: topSellBook,
+      message: 'Get report top sell successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
+  }
+
+  public async reportSellBookEachCategory(payload: ReportSellBookEachCategoryRequestDto): Promise<IReportSellBookEachCategoryResponse> {
+    const { fullDate, day, month, year }: ReportTopSellBookRequestDto = payload;
+
+    const filters: Record<string, any> = {};
+
+    if (fullDate) {
+      filters.createdAt = {
+        $gt: new Date(fullDate).setDate(new Date(fullDate).getDate()),
+        $lt: new Date(fullDate).setDate(new Date(fullDate).getDate() + 1)
+      };
+    } else if (day || month || year) {
+      const dayFilter = { $eq: [{ $dayOfMonth: "$createdAt" }, day] };
+      const monthFilter = { $eq: [{ $month: "$createdAt" }, month] };
+      const yearFilter = { $eq: [{ $year: "$createdAt" }, year] };
+
+      filters.$expr = { $and: [] };
+
+      if (day) filters.$expr.$and.push(dayFilter);
+      if (month) filters.$expr.$and.push(monthFilter);
+      if (year) filters.$expr.$and.push(yearFilter);
+    }
+
+    const sellBookEachCategory = await this.bookModel.find(filters, { price: 0, stock: 0, imageFileName: 0 });
+
+    return {
+      data: sellBookEachCategory,
+      message: 'Get report sell book each category successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
+  }
+
+  public async getTopUserPurchasedBook() {
+    const results = [];
+
+    const users = await firstValueFrom(this.userServiceClient.send({ service: 'user', cmd: 'get-all-top-user' }, ''));
+
+    const totalPurchaseBookEachUser = await this.purchaseBookModel.aggregate([
+      { $group: { _id: "$userId", totalQuantity: { $sum: "$quantity" }, totalPrice: { $sum: "$price" } } },
+      { $project: { _id: 0, userId: "$_id", totalQuantity: 1, totalPrice: 1 }, }
+    ]);
+
+    const categories = await this.categoryModel.find({}, { name: 1 });
+    let categoriesName = [];
+    categories.forEach(c => {
+      categoriesName.push({ categoryName: c.name, totalQuantity: 0, totalPrice: 0 });
+    });
+
+    const allPurchasedBook = await this.purchaseBookModel.find({}, { userId: 1, quantity: 1, price: 1, bookId: 1, categories: 1 });
+
+    users.forEach((u: any) => {
+      let purchase = totalPurchaseBookEachUser.find((pur: any) => pur.userId.toString() === u._id.toString());
+      if (purchase) {
+        results.push({
+          userDetail: u,
+          totalQuantity: purchase.totalQuantity,
+          totalPrice: purchase.totalPrice,
+          eachCategory: JSON.parse(JSON.stringify(categoriesName))
+        })
+      }
+    });
+
+    allPurchasedBook.forEach((a) => {
+      let index = results.findIndex(r => r.userDetail._id.toString() === a.userId.toString());
+
+      if (index !== -1) {
+        results[index].eachCategory.map((eachCate) => {
+          let cate: string = a.categories.find(aCate => aCate === eachCate.categoryName)
+          if (cate) {
+            let newPrice: number = (eachCate.totalPrice + a.price)
+            eachCate.totalQuantity += a.quantity;
+            eachCate.totalPrice = Math.round(newPrice * 100) / 100;
+          }
+          return eachCate;
+        })
+      }
+    })
+
+    return results;
+  }
+
+  // send to user service
+  public async getTotalBookPurchaseToUserService() {
+    return await this.purchaseBookModel.aggregate([
+      { $group: { _id: "$userId", totalQuantity: { $sum: "$quantity" } } },
+      { $project: { _id: 0, userId: "$_id", totalQuantity: 1 }, }
+    ])
+  }
+
+  // send to user service
+  public async getLastPurchasedBookToUserService() {
+    return await this.purchaseBookModel.aggregate([
+      { $group: { _id: "$userId", lastPurchase: { $last: "$createdAt" } } },
+      { $sort: { "lastPurchase": -1 } },
+      { $project: { _id: 0, userId: "$_id", lastPurchase: 1 }, }
+    ]);
   }
 }

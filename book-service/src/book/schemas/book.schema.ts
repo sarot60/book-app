@@ -12,8 +12,8 @@ export class Book {
   @Prop({ type: String })
   name: string;
 
-  @Prop({ type: String })
-  category: string;
+  @Prop({ type: Array })
+  categories: string[];
 
   @Prop({ type: Number })
   stock: number;

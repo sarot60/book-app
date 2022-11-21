@@ -5,6 +5,7 @@ import {
   MaxLength,
   IsNotEmpty,
   IsOptional,
+  IsArray,
 } from 'class-validator';
 import { Types } from 'mongoose';
 import { IPurchaseBookRequest } from "../book.interface";
@@ -23,9 +24,9 @@ export class PurchaseBookRequestDto implements IPurchaseBookRequest {
   @MaxLength(30)
   bookName: string;
 
-  @IsString()
+  @IsArray()
   @IsNotEmpty()
-  category: string;
+  categories: string[];
 
   @IsNumber()
   quantity: number;
