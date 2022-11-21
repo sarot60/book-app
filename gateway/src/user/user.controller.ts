@@ -10,6 +10,8 @@ import { DeleteUserResponseDto } from './dto/delete-user-response.dto';
 import { GetAllResponseDto } from './dto/get-all-response.dto';
 import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
 import { GetUserByIdResponseDto } from './dto/get-user-by-id-response.dto';
+import { UpdateUserRequestDto } from './dto/update-user-request.dto';
+import { UpdateUserResponseDto } from './dto/update-user-response.dto';
 import { CreateUserRequestDto, GetAllRequestDto } from './user.dto';
 
 @Controller('user')
@@ -47,12 +49,16 @@ export class UserController {
   }
 
   @Put(':id')
-  private async updateUser(@Param('id') id: string, @Body() body) {
-    const request = { id, body };
+  @UseGuards(AuthJwtGuard)
+  @ApiOkResponse({ type: UpdateUserResponseDto })
+  private async updateUser(@Param('id') _id: Types.ObjectId, @Body() body: UpdateUserRequestDto): Promise<UpdateUserResponseDto> {
+    const request = { _id, ...body };
+
     const updateUserResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'update' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
+
     return updateUserResponse;
   }
 
