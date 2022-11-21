@@ -4,8 +4,10 @@ import { LoginLimitGuard } from "./guards/login-limit.guard";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../user/dto/create-user.dto";
 import { LoginRequestDto } from "./dto/login-request.dto";
-import { IChangePasswordResponse, ILoginResponse, IRegisterResponse } from "./auth.interface";
+import { IBanResponse, ICancelBanResponse, IChangePasswordResponse, ILoginResponse, IRegisterResponse } from "./auth.interface";
 import { ChangePasswordRequestDto } from "./dto/change-password-request.dto";
+import { BanRequestDto } from "./dto/ban-request.dto";
+import { CancelBanRequestDto } from "./dto/cancel-ban-request.dto";
 
 @Controller('auth')
 export class AuthController {
@@ -28,13 +30,13 @@ export class AuthController {
   }
 
   @MessagePattern({ service: 'user', cmd: 'ban' })
-  private async banTheUser(@Payload() id: string): Promise<any> {
-    return await this.authService.banTheUser(id);
+  private async banTheUser(@Payload() payload: BanRequestDto): Promise<IBanResponse> {
+    return await this.authService.banTheUser(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'cancel-ban' })
-  private async cancelBanTheUser(@Payload() id: string): Promise<any> {
-    return await this.authService.cancelBanTheUser(id);
+  private async cancelBanTheUser(@Payload() payload: CancelBanRequestDto): Promise<ICancelBanResponse> {
+    return await this.authService.cancelBanTheUser(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'validate-token' })

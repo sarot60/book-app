@@ -7,8 +7,10 @@ import { UserService } from "src/user/user.service";
 import { AuthHelper } from "./helpers/auth.helper";
 import { LoginLimitHelper } from "./helpers/login-limit.helper";
 import { LoginRequestDto } from "./dto/login-request.dto";
-import { IChangePasswordResponse, ILoginResponse, IRegisterResponse } from "./auth.interface";
+import { IBanResponse, ICancelBanResponse, IChangePasswordResponse, ILoginResponse, IRegisterResponse } from "./auth.interface";
 import { ChangePasswordRequestDto } from "./dto/change-password-request.dto";
+import { BanRequestDto } from "./dto/ban-request.dto";
+import { CancelBanRequestDto } from "./dto/cancel-ban-request.dto";
 
 @Injectable()
 export class AuthService {
@@ -132,23 +134,31 @@ export class AuthService {
     };
   }
 
-  public async banTheUser(id: string): Promise<any> {
-    const banned = await this.userService.updateUser(id, { banned: true });
+  public async banTheUser(payload: BanRequestDto): Promise<IBanResponse> {
+    const userId = payload.userId;
+    const banned = await this.userService.updateUser(userId, { banned: true });
     if (!banned) throw new NotFoundException('Invalid user');
     return {
+      data: {
+        userId: banned._id
+      },
       status: HttpStatus.OK,
       error: null,
-      message: ['Banned successful.']
+      message: 'Banned successful'
     }
   }
 
-  public async cancelBanTheUser(id: string): Promise<any> {
-    const banned = await this.userService.updateUser(id, { banned: false });
+  public async cancelBanTheUser(payload: CancelBanRequestDto): Promise<ICancelBanResponse> {
+    const userId = payload.userId;
+    const banned = await this.userService.updateUser(userId, { banned: false });
     if (!banned) throw new NotFoundException('Invalid user');
     return {
+      data: {
+        userId: banned._id
+      },
       status: HttpStatus.OK,
       error: null,
-      message: ['Cancel ban successful.']
+      message: 'Cancel ban successful'
     }
   }
 }

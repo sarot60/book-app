@@ -39,3 +39,29 @@ export interface IRegisterResponse {
   status: number;
   error: { [key: string]: any } | null;
 }
+
+export interface IBanRequest {
+  userId: Types.ObjectId;
+}
+
+export interface IBanResponse {
+  data: {
+    userId: Types.ObjectId,
+  };
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface ICancelBanRequest {
+  userId: Types.ObjectId;
+}
+
+export interface ICancelBanResponse {
+  data: {
+    userId: Types.ObjectId,
+  };
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
