@@ -1,9 +1,13 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, Put, Query, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { AuthJwtGuard } from '../auth/guards/auth-jwt.guard';
 import { MapExceptionFromRpc } from '../common/map-exception-from-rpc-to-http';
+import { GetAllResponseDto } from './dto/get-all-response.dto';
+import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
+import { GetUserByIdResponseDto } from './dto/get-user-by-id-response.dto';
 import { CreateUserRequestDto, GetAllRequestDto } from './user.dto';
 
 @Controller('user')
@@ -24,6 +28,7 @@ export class UserController {
   @Get()
   @UseGuards(AuthJwtGuard)
   @ApiQuery({ name: 'search', required: false })
+  @ApiOkResponse({ type: GetAllResponseDto })
   private async getAllUser(
     @Query('page', ParseIntPipe) page: number,
     @Query('limit', ParseIntPipe) limit: number,
@@ -35,7 +40,7 @@ export class UserController {
       .send({ service: 'user', cmd: 'get-all' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
-    
+
     return getAllResponse;
   }
 
@@ -51,9 +56,11 @@ export class UserController {
 
   @Get(':id')
   @UseGuards(AuthJwtGuard)
-  private async getUserById(@Param('id') id: string) {
+  @ApiOkResponse({ type: GetUserByIdResponseDto })
+  private async getUserById(@Param('id') userId: Types.ObjectId): Promise<GetUserByIdResponseDto> {
+    const request:GetUserByIdRequestDto = { userId }
     const user = await firstValueFrom(this.userServiceClient
-      .send({ service: 'user', cmd: 'get-by-id' }, id)
+      .send({ service: 'user', cmd: 'get-by-id' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
     return user;
