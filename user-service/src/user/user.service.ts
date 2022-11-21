@@ -5,10 +5,11 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, IGetAllResponse } from './user.interface';
+import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, IGetAllResponse, IGetUserByIdRequest, IGetUserByIdResponse } from './user.interface';
 import { RegisteredLog, RegisteredLogDocument } from './schemas/registered-log.schema';
 import { LogedinLog, LogedinLogDocument } from './schemas/logedin-log.schema';
 import { GetAllRequestDto } from './dto/get-all-request.dto';
+import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
 
 @Injectable()
 export class UserService {
@@ -66,8 +67,20 @@ export class UserService {
     };
   }
 
-  public async getUserById(id: string): Promise<User> {
-    const user = await this.userModel.findById(id, { password: 0 }).exec();
+  public async getUserById(payload: GetUserByIdRequestDto): Promise<IGetUserByIdResponse> {
+    const { userId } = payload;
+    const user = await this.userModel.findById(userId, { password: 0 }).exec();
+    if (!user) throw new NotFoundException('Invalid user');
+    return {
+      data: user,
+      message: 'Get user Successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
+  }
+
+  public async localGetUserById(userId: Types.ObjectId): Promise<UserDocument> {
+    const user = await this.userModel.findById(userId, { password: 0 }).exec();
     if (!user) throw new NotFoundException('Invalid user');
     return user;
   }

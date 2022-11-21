@@ -9,7 +9,8 @@ import { GetAllRequestDto } from "./dto/get-all-request.dto";
 import { AuthHelper } from "src/auth/helpers/auth.helper";
 import { ConfigService } from "@nestjs/config";
 import { UpdateUserRequestDto } from "./dto/update-user-request.dto";
-import { IGetAllResponse } from "./user.interface";
+import { IGetAllResponse, IGetUserByIdResponse } from "./user.interface";
+import { GetUserByIdRequestDto } from "./dto/get-user-by-id-request.dto";
 
 @Controller('user')
 export class UserController {
@@ -39,8 +40,8 @@ export class UserController {
   }
 
   @MessagePattern({ service: 'user', cmd: 'get-by-id' })
-  private async getUserById(@Payload() id: string): Promise<User> {
-    return await this.userService.getUserById(id);
+  private async getUserById(@Payload() payload: GetUserByIdRequestDto): Promise<IGetUserByIdResponse> {
+    return await this.userService.getUserById(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'delete' })

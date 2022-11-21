@@ -31,7 +31,7 @@ export class AuthHelper {
   }
 
   public async validateUser(decoded) {
-    return this.userService.getUserById(decoded._id);
+    return this.userService.localGetUserById(decoded._id);
   }
 
   public async decode(token: string): Promise<unknown> {

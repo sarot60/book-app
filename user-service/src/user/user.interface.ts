@@ -1,4 +1,6 @@
 import { Types } from "mongoose";
+import { Role } from "./role.enum";
+import { User, UserDocument } from "./schemas/user.schema";
 
 export interface IGetAllRequest {
   page: number;
@@ -8,9 +10,20 @@ export interface IGetAllRequest {
 
 export interface IGetAllResponse {
   data: {
-    users: any[],
+    users: User[] | UserDocument[],
     total: number,
   } | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface IGetUserByIdRequest {
+  userId: Types.ObjectId;
+}
+
+export interface IGetUserByIdResponse {
+  data: User | UserDocument;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
