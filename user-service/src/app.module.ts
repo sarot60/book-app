@@ -1,12 +1,11 @@
 import { CacheModule, Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
-import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MongooseConfigService } from './config/mongoose.config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as redisStore from 'cache-manager-redis-store';
+
+import { MongooseConfigService } from './config/mongoose.config';
 import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -14,15 +13,17 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({ useClass: MongooseConfigService }),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      store: redisStore,
-      ttl: 10,
-      host: process.env.REDIS_HOST,
-      port: +process.env.REDIS_PORT,
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: redisStore,
+        ttl: configService.get<number>('CACHE_TTL'),
+        host: configService.get<string>('REDIS_HOST'),
+        port: configService.get<number>('REDIS_PORT'),
+      }),
+      inject: [ConfigService],
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule { }
