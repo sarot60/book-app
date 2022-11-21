@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, Post, Put, Query, Res, UseFilters, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, Put, Query, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { catchError, firstValueFrom, of } from 'rxjs';
@@ -25,15 +25,17 @@ export class UserController {
   @UseGuards(AuthJwtGuard)
   @ApiQuery({ name: 'search', required: false })
   private async getAllUser(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
+    @Query('page', ParseIntPipe) page: number,
+    @Query('limit', ParseIntPipe) limit: number,
     @Query('search') search?: string,
-  ): Promise<any> {
+  ): Promise<GetAllRequestDto> {
     const request: GetAllRequestDto = { page, limit, search };
+
     const getAllResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'get-all' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
+    
     return getAllResponse;
   }
 
@@ -65,5 +67,17 @@ export class UserController {
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
     return delUserMsg;
+  }
+
+  @Get('report/new-user')
+  @UseGuards(AuthJwtGuard)
+  private async getReportNewUser() {
+
+  }
+
+  @Get('report/user-login-count')
+  @UseGuards(AuthJwtGuard)
+  private async getReportUserLoginCount() {
+
   }
 }
