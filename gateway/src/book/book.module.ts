@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AuthModule } from 'src/auth/auth.module';
 import { BookController } from './book.controller';
@@ -6,14 +7,18 @@ import { BookController } from './book.controller';
 @Module({
   imports: [
     AuthModule,
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'BOOK_SERVICE',
-        transport: Transport.REDIS,
-        options: {
-          host: process.env.REDIS_HOST,
-          port: +process.env.REDIS_PORT,
-        }
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.REDIS,
+          options: {
+            host: configService.get<string>('REDIS_HOST'),
+            port: configService.get<number>('REDIS_PORT'),
+          }
+        }),
+        inject: [ConfigService],
       },
     ]),
   ],

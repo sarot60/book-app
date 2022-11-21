@@ -1,6 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -9,12 +12,17 @@ async function bootstrap() {
     .setTitle('API docs')
     .addTag('user')
     .addTag('book')
+    .addTag('auth')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('book-app-api', app, document);
 
-  await app.listen(3000);
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  const appPort = app.get(ConfigService).get<number>('APP_PORT');
+
+  await app.listen(appPort);
 }
 bootstrap();
