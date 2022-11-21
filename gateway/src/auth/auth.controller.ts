@@ -14,6 +14,10 @@ import { ChangePasswordResponseDto } from './dto/change-password-response.dto';
 import { ChangePasswordRequestDto } from './dto/change-password-request.dto';
 import { RegisterRequestDto } from './dto/register-request.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
+import { BanRequestDto } from './dto/ban-request.dto';
+import { BanResponseDto } from './dto/ban-response.dto';
+import { CancelBanRequestDto } from './dto/cancel-ban-request.dto';
+import { CancelBanResponseDto } from './dto/cancel-ban-response.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -61,26 +65,34 @@ export class AuthController {
   }
 
   @Put('ban/:id')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.User)
   @UseGuards(AuthJwtGuard, RolesGuard)
-  private async banTheUser(@Param('id') id: string) {
-    const bannedMsg = await firstValueFrom(this.userServiceClient
-      .send({ service: 'user', cmd: 'ban' }, id)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: BanResponseDto })
+  private async banTheUser(@Param('id') userId: BanRequestDto): Promise<BanResponseDto> {
+    const request = { userId };
+
+    const bannedResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'ban' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
 
-    return bannedMsg;
+    return bannedResponse;
   }
 
   @Put('cancel-ban/:id')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.User)
   @UseGuards(AuthJwtGuard, RolesGuard)
-  private async cancelBanTheUser(@Param('id') id: string) {
-    const cancelBanMsg = await firstValueFrom(this.userServiceClient
-      .send({ service: 'user', cmd: 'cancel-ban' }, id)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: CancelBanResponseDto })
+  private async cancelBanTheUser(@Param('id') userId: CancelBanRequestDto): Promise<CancelBanResponseDto> {
+    const request = { userId };
+
+    const cancelBanResponse = await firstValueFrom(this.userServiceClient
+      .send({ service: 'user', cmd: 'cancel-ban' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
 
-    return cancelBanMsg;
+    return cancelBanResponse;
   }
 }
