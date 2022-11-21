@@ -9,8 +9,8 @@ import { BookModule } from './book/book.module';
 
 @Module({
   imports: [
-    AuthModule, 
-    UserModule, 
+    AuthModule,
+    UserModule,
     BookModule,
     ConfigModule.forRoot({ isGlobal: true }),
   ],
