@@ -1,6 +1,8 @@
 > **NOTE**
 >
-> This application uses a single database instance for all microservices.
+> This microservice application uses a single database instance for all microservices.
+> 
+> Because my device will :boom::bomb::boom:
 
 </br>
 
@@ -12,14 +14,20 @@
 $ cd book-app
 
 $ ./run.docker-compose.sh
+
+# if cannot excute this file
+$ chmod -R 777 run.docker-compose.sh
 ```
 
-## Option 2 - use docker
+## Option 2 - use manual docker (Required docker login, Not Recomand)
 
 ```bash
 $ cd book-app
 
 $ ./run.docker.sh
+
+# if cannot excute this file
+$ chmod -R 777 run.docker.sh
 ```
 
 # test 
@@ -33,6 +41,6 @@ $ curl 172.20.100.2:3000
 # docker gateway ip
 ```
 
-# swagger
+# swagger open-api
 
 localhost:3000/book-app-api
