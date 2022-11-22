@@ -108,7 +108,7 @@ export class AuthService {
       },
       status: HttpStatus.OK,
       error: null,
-      message: 'Update password successful',
+      message: 'Change password successful',
     }
   }
 

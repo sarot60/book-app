@@ -4,6 +4,5 @@ import { ICancelBanRequest } from "../auth.interface";
 
 export class CancelBanRequestDto implements ICancelBanRequest {
   @IsNotEmpty()
-  @IsMongoId()
   userId: Types.ObjectId;
 }

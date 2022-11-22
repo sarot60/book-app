@@ -4,6 +4,5 @@ import { IBanRequest } from "../auth.interface";
 
 export class BanRequestDto implements IBanRequest {
   @IsNotEmpty()
-  @IsMongoId()
   userId: Types.ObjectId;
 }

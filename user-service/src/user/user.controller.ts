@@ -1,16 +1,24 @@
-import { Response } from "express";
+import { Controller, Inject } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Body, Controller, Delete, Get, HttpStatus, Inject, NotFoundException, Param, Post, Put, Query, Res, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
-import { MessagePattern, Payload, Ctx, RedisContext, RpcException } from '@nestjs/microservices';
-import { User } from "./schemas/user.schema";
-import { CreateUserRequestDto } from "./dto/create-user.dto";
-import { GetAllRequestDto } from "./dto/get-all-request.dto";
-import { AuthHelper } from "src/auth/helpers/auth.helper";
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ConfigService } from "@nestjs/config";
-import { UpdateUserRequestDto } from "./dto/update-user-request.dto";
-import { ICreateUserResponse, IDeleteUserResponse, IGetAllResponse, IGetUserByIdResponse, IUpdateUserResponse } from "./user.interface";
+import {
+  ICreateUserResponse,
+  IDeleteUserResponse,
+  IGetAllResponse,
+  IGetLastPurchasedBookResponse,
+  IGetTotalBookPurchasedEachUserResponse,
+  IGetUserByIdResponse,
+  INewUserResponse,
+  IUpdateUserResponse,
+  IUserLoginCountResponse
+} from "./user.interface";
 import { GetUserByIdRequestDto } from "./dto/get-user-by-id-request.dto";
 import { DeleteUserRequestDto } from "./dto/delete-user-request.dto";
+import { UpdateUserRequestDto } from "./dto/update-user-request.dto";
+import { CreateUserRequestDto } from "./dto/create-user.dto";
+import { GetAllRequestDto } from "./dto/get-all-request.dto";
+import { AuthHelper } from "../auth/helpers/auth.helper";
 
 @Controller('user')
 export class UserController {
@@ -50,28 +58,27 @@ export class UserController {
   }
 
   @MessagePattern({ service: 'user', cmd: 'get-total-book-purchased-by-the-user' })
-  private async getTotalBookPurchasedByTheUser() {
+  private async getTotalBookPurchasedByTheUser(): Promise<IGetTotalBookPurchasedEachUserResponse> {
     return await this.userService.getTotalBookPurchasedByTheUser();
   }
 
   @MessagePattern({ service: 'user', cmd: 'get-last-purchased-book' })
-  private async getLastPurchasedBook() {
+  private async getLastPurchasedBook(): Promise<IGetLastPurchasedBookResponse> {
     return await this.userService.getLastPurchasedBook();
   }
 
   @MessagePattern({ service: 'user', cmd: 'report-login-count' })
-  private async reportUserLoginCount() {
-    return await this.userService.reportUserLoginCount();
+  private async reportUserLoginCount(@Payload() payload: any): Promise<IUserLoginCountResponse> {
+    return await this.userService.reportUserLoginCount(payload);
   }
 
   @MessagePattern({ service: 'user', cmd: 'report-registered' })
-  private async reportUserRegistered() {
-    return await this.userService.reportUserRegistered();
+  private async reportUserRegistered(@Payload() payload: any): Promise<INewUserResponse> {
+    return await this.userService.reportUserRegistered(payload);
   }
 
-  // send to book service
   @MessagePattern({ service: 'user', cmd: 'get-all-top-user' })
-  private async getAllTopUser() {
+  private async getAllTopUser(): Promise<any> {
     return await this.userService.getAllTopUser();
   }
 }

@@ -4,7 +4,6 @@ import { IChangePasswordRequest } from "../auth.interface";
 
 export class ChangePasswordRequestDto implements IChangePasswordRequest  {
   @IsNotEmpty()
-  @IsMongoId()
   userId: Types.ObjectId;
 
   @IsNotEmpty()

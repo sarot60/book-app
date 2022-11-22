@@ -81,3 +81,40 @@ export interface ICreateLogedinLogRequest {
   firstName: string;
   lastName: string;
 }
+
+export interface IUserLoginCountResponse {
+  data: {
+    count: number;
+  } | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface INewUserResponse {
+  data: {
+    logs: any[],
+    total: number,
+  } | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface IGetTotalBookPurchasedEachUserResponse {
+  data: {
+    topPurchased: any[];
+  } | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}
+
+export interface IGetLastPurchasedBookResponse {
+  data: {
+    lastPurchased: any[];
+  } | null;
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}

@@ -2,17 +2,30 @@ import { ConflictException, HttpStatus, Inject, Injectable, NotFoundException } 
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { firstValueFrom } from 'rxjs';
+
+import {
+  ICreateLogedinLogRequest,
+  ICreateRegisteredLogRequest,
+  ICreateUserResponse,
+  IDeleteUserResponse,
+  IGetAllResponse,
+  IGetLastPurchasedBookResponse,
+  IGetTotalBookPurchasedEachUserResponse,
+  IGetUserByIdResponse,
+  INewUserResponse,
+  IUpdateUserResponse,
+  IUserLoginCountResponse
+} from './user.interface';
 import { User, UserDocument } from './schemas/user.schema';
-import { CreateUserRequestDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ICreateLogedinLogRequest, ICreateRegisteredLogRequest, ICreateUserResponse, IDeleteUserResponse, IGetAllResponse, IGetUserByIdRequest, IGetUserByIdResponse, IUpdateUserResponse } from './user.interface';
 import { RegisteredLog, RegisteredLogDocument } from './schemas/registered-log.schema';
 import { LogedinLog, LogedinLogDocument } from './schemas/logedin-log.schema';
 import { GetAllRequestDto } from './dto/get-all-request.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserByIdRequestDto } from './dto/get-user-by-id-request.dto';
 import { DeleteUserRequestDto } from './dto/delete-user-request.dto';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
-import { firstValueFrom } from 'rxjs';
+import { CreateUserRequestDto } from "./dto/create-user.dto";
 
 @Injectable()
 export class UserService {
@@ -159,7 +172,7 @@ export class UserService {
     await new this.logedinLogModel(data).save();
   }
 
-  public async getTotalBookPurchasedByTheUser() {
+  public async getTotalBookPurchasedByTheUser(): Promise<IGetTotalBookPurchasedEachUserResponse> {
     const users = await this.userModel.find({}, { _id: 1, username: 1, firstName: 1, lastName: 1 })
 
     const purchasedTotalPerUser = await firstValueFrom(this.bookServiceClient.send({ service: 'book', cmd: 'get-total-book-purchase' }, ''));
@@ -178,10 +191,17 @@ export class UserService {
       }
     })
 
-    return totalPurchase;
+    return {
+      data: {
+        topPurchased: totalPurchase.sort((a, b) => b.purchasedQuantity - a.purchasedQuantity)
+      },
+      message: 'Get total purchase successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
   }
 
-  public async getLastPurchasedBook() {
+  public async getLastPurchasedBook(): Promise<IGetLastPurchasedBookResponse> {
     const users = await this.userModel.find({}, { _id: 1, username: 1, firstName: 1, lastName: 1 })
 
     const lastPurchasedBook = await firstValueFrom(this.bookServiceClient.send({ service: 'book', cmd: 'get-last-purchase-book' }, ''));
@@ -200,19 +220,75 @@ export class UserService {
       }
     })
 
-    return lastPurchase;
+    return {
+      data: {
+        lastPurchased: lastPurchase,
+      },
+      message: 'Get last purchase successful',
+      status: HttpStatus.OK,
+      error: null,
+    };
   }
 
-  public async reportUserLoginCount() {
-    return await this.logedinLogModel.count();
+  public async reportUserLoginCount(payload: any): Promise<IUserLoginCountResponse> {
+    const { fullDate, day, month, year }: any = payload;
+
+    const filters = this.generateDateFilter(fullDate, day, month, year);
+
+    const loginCount = await this.logedinLogModel.count(filters);
+    return {
+      data: {
+        count: loginCount,
+      },
+      message: 'Get user login count successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
   }
 
-  public async reportUserRegistered() {
-    return await this.registeredLogModel.find({}).sort({ createdAt: -1 });
+  public async reportUserRegistered(payload: any): Promise<INewUserResponse> {
+    const { fullDate, day, month, year }: any = payload;
+
+    const filters = this.generateDateFilter(fullDate, day, month, year);
+
+    const newUsers = await this.registeredLogModel.find(filters).sort({ createdAt: -1 });
+    const total = await this.registeredLogModel.count();
+    return {
+      data: {
+        logs: newUsers,
+        total
+      },
+      message: 'Get new user successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
+  }
+
+  private generateDateFilter(fullDate: string, day: number, month: number, year: number) {
+    const filters: Record<string, any> = {};
+
+    if (fullDate) {
+      filters.createdAt = {
+        $gt: new Date(fullDate).setDate(new Date(fullDate).getDate()),
+        $lt: new Date(fullDate).setDate(new Date(fullDate).getDate() + 1)
+      };
+    } else if (day || month || year) {
+      const dayFilter = { $eq: [{ $dayOfMonth: "$createdAt" }, day] };
+      const monthFilter = { $eq: [{ $month: "$createdAt" }, month] };
+      const yearFilter = { $eq: [{ $year: "$createdAt" }, year] };
+
+      filters.$expr = { $and: [] };
+
+      if (day) filters.$expr.$and.push(dayFilter);
+      if (month) filters.$expr.$and.push(monthFilter);
+      if (year) filters.$expr.$and.push(yearFilter);
+    }
+
+    return filters;
   }
 
   // send to book service
-  public async getAllTopUser() {
+  public async getAllTopUser(): Promise<any> {
     return await this.userModel.find({}, { password: 0, roles: 0, banned: 0, createdAt: 0, updatedAt: 0 })
   }
 }
