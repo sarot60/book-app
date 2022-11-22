@@ -13,7 +13,7 @@ export interface ICreateBookResponse {
   data: {
     _id: Types.ObjectId,
     name: string,
-  };
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -32,7 +32,7 @@ export interface IGetAllBookResponse {
   data: {
     books: any[],
     total: number,
-  };
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -43,7 +43,7 @@ export interface IGetBookByIdRequest {
 }
 
 export interface IGetBookByIdResponse {
-  data: { [key: string]: any };
+  data: { [key: string]: any } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -52,7 +52,7 @@ export interface IGetBookByIdResponse {
 export interface IUpdateBookResponse {
   data: {
     _id: Types.ObjectId,
-  }
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -65,7 +65,7 @@ export interface IDeleteBookRequest {
 export interface IDeleteBookResponse {
   data: {
     _id: Types.ObjectId,
-  };
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -83,7 +83,7 @@ export interface IPurchaseBookRequest {
 export interface IPurchaseBookResponse {
   data: {
     _id: Types.ObjectId,
-  };
+  } | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -97,7 +97,7 @@ export interface IReportTopSellBookRequest {
 }
 
 export interface IReportTopSellBookResponse {
-  data: any[];
+  data: any[] | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
@@ -111,14 +111,14 @@ export interface IReportSellBookEachCategoryRequest {
 }
 
 export interface IReportSellBookEachCategoryResponse {
-  data: any[];
+  data: any[] | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
 }
 
 export interface IGetTopUserPurchaseBookResponse {
-  data: any[];
+  data: any[] | null;
   message: string;
   status: number;
   error: { [key: string]: any } | null;
