@@ -1,14 +1,22 @@
 import { Controller, UseGuards } from "@nestjs/common";
 import { MessagePattern, Payload } from "@nestjs/microservices";
-import { LoginLimitGuard } from "./guards/login-limit.guard";
+
 import { AuthService } from "./auth.service";
-import { CreateUserRequestDto } from "../user/dto/create-user.dto";
+import {
+  IBanResponse,
+  ICancelBanResponse,
+  IChangePasswordResponse,
+  ILoginResponse,
+  IRegisterResponse,
+  IValidateTokenResponse,
+} from "./auth.interface";
+import { LoginLimitGuard } from "./guards/login-limit.guard";
 import { LoginRequestDto } from "./dto/login-request.dto";
-import { IBanResponse, ICancelBanResponse, IChangePasswordResponse, ILoginResponse, IRegisterResponse, IValidateTokenResponse } from "./auth.interface";
 import { ChangePasswordRequestDto } from "./dto/change-password-request.dto";
 import { BanRequestDto } from "./dto/ban-request.dto";
 import { CancelBanRequestDto } from "./dto/cancel-ban-request.dto";
 import { ValidateTokenRequestDto } from "./dto/validate-token-request.dto";
+import { CreateUserRequestDto } from "../user/dto/create-user.dto";
 
 @Controller('auth')
 export class AuthController {
