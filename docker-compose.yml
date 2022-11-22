@@ -17,6 +17,7 @@ services:
       context: ./gateway
     depends_on:
       - redis
+      - mongodb
     ports:
       - "3000:3000"
     networks:
@@ -43,6 +44,7 @@ services:
       context: ./user-service
     depends_on:
       - redis
+      - mongodb
     ports:
       - "4001:4001"
     networks:
@@ -57,11 +59,23 @@ services:
       context: ./book-service
     depends_on:
       - redis
+      - mongodb
     ports:
       - "4002:4002"
     networks:
       api_microservice:
         ipv4_address: 172.20.100.5
+
+  mongodb:
+    container_name: mongodb
+    build:
+      context: ./mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      api_microservice:
+        ipv4_address: 172.20.100.10
 
 
   # For log redis

@@ -358,15 +358,15 @@ for (let i = 0; i < 100; i++) {
 
   orders.push({
     'userId': user._id,
-    'userUsername': user.username,
-    'userFirstName': user.firstName,
-    'userLastName': user.lastName,
+    // 'userUsername': user.username,
+    // 'userFirstName': user.firstName,
+    // 'userLastName': user.lastName,
     'bookId': book._id,
     'bookName': book.name,
     'categories': book.categories,
     'quantity': randomQuantity,
     'price': price,
-    'bookPrice': book.price,
+    // 'bookPrice': book.price,
     'createdAt': createDate,
     'updatedAt': createDate,
   });
