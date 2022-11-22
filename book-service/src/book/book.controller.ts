@@ -5,6 +5,7 @@ import {
   IDeleteBookResponse,
   IGetAllBookResponse,
   IGetBookByIdResponse,
+  IGetTopUserPurchaseBookResponse,
   IPurchaseBookResponse,
   IReportSellBookEachCategoryResponse,
   IReportTopSellBookResponse,
@@ -65,19 +66,19 @@ export class BookController {
   }
 
   @MessagePattern({ service: 'book', cmd: 'get-top-user-purchased' })
-  private getTopUserPurchasedBook() {
+  private getTopUserPurchasedBook(): Promise<IGetTopUserPurchaseBookResponse> {
     return this.bookService.getTopUserPurchasedBook();
   }
 
   // send to user service
   @MessagePattern({ service: 'book', cmd: 'get-total-book-purchase' })
-  private getTotalBookPurchaseToUserService() {
+  private getTotalBookPurchaseToUserService(): Promise<any> {
     return this.bookService.getTotalBookPurchaseToUserService();
   }
 
   // send to user service
   @MessagePattern({ service: 'book', cmd: 'get-last-purchase-book' })
-  private getLastPurchasedBookToUserService() {
+  private getLastPurchasedBookToUserService(): Promise<any> {
     return this.bookService.getLastPurchasedBookToUserService();
   }
 }

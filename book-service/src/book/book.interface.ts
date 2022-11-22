@@ -116,3 +116,10 @@ export interface IReportSellBookEachCategoryResponse {
   status: number;
   error: { [key: string]: any } | null;
 }
+
+export interface IGetTopUserPurchaseBookResponse {
+  data: any[];
+  message: string;
+  status: number;
+  error: { [key: string]: any } | null;
+}

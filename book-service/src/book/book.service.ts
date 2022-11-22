@@ -9,6 +9,7 @@ import {
 import { Model } from 'mongoose';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
+import { firstValueFrom } from 'rxjs';
 
 import {
   IUpdateBookResponse,
@@ -19,8 +20,12 @@ import {
   IPurchaseBookResponse,
   IReportTopSellBookResponse,
   IReportSellBookEachCategoryResponse,
+  IGetTopUserPurchaseBookResponse,
 } from './book.interface';
 
+import { Book, BookDocument } from './schemas/book.schema';
+import { PurchaseBook, PurchaseBookDocument } from './schemas/purchase-book.schema';
+import { Category, CategoryDocument } from './schemas/category.schema';
 import { CreateBookRequestDto } from './dto/create-book-request.dto';
 import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { GetAllBookRequestDto } from './dto/get-all-book-request.dto';
@@ -29,10 +34,6 @@ import { PurchaseBookRequestDto } from './dto/purchase-book-request.dto';
 import { ReportSellBookEachCategoryRequestDto } from './dto/report-sell-book-each-category-response.dto';
 import { ReportTopSellBookRequestDto } from './dto/report-top-sell-book-request.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
-import { Book, BookDocument } from './schemas/book.schema';
-import { PurchaseBook, PurchaseBookDocument } from './schemas/purchase-book.schema';
-import { Category, CategoryDocument } from './schemas/category.schema';
-import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class BookService {
@@ -133,7 +134,7 @@ export class BookService {
     if (!deleteBook) throw new NotFoundException('Invalid Book');
     return {
       data: { _id: deleteBook._id },
-      message: 'Get book Successful',
+      message: 'Delete book Successful',
       status: HttpStatus.OK,
       error: null,
     }
@@ -182,24 +183,7 @@ export class BookService {
   public async reportTopSellBook(payload: ReportTopSellBookRequestDto): Promise<IReportTopSellBookResponse> {
     const { fullDate, day, month, year }: ReportTopSellBookRequestDto = payload;
 
-    const filters: Record<string, any> = {};
-
-    if (fullDate) {
-      filters.createdAt = {
-        $gt: new Date(fullDate).setDate(new Date(fullDate).getDate()),
-        $lt: new Date(fullDate).setDate(new Date(fullDate).getDate() + 1)
-      };
-    } else if (day || month || year) {
-      const dayFilter = { $eq: [{ $dayOfMonth: "$createdAt" }, day] };
-      const monthFilter = { $eq: [{ $month: "$createdAt" }, month] };
-      const yearFilter = { $eq: [{ $year: "$createdAt" }, year] };
-
-      filters.$expr = { $and: [] };
-
-      if (day) filters.$expr.$and.push(dayFilter);
-      if (month) filters.$expr.$and.push(monthFilter);
-      if (year) filters.$expr.$and.push(yearFilter);
-    }
+    const filters = this.generateDateFilter(fullDate, day, month, year);
 
     const topSellBook = await this.bookModel
       .find(filters, { price: 0, stock: 0, imageFileName: 0 })
@@ -213,9 +197,7 @@ export class BookService {
     }
   }
 
-  public async reportSellBookEachCategory(payload: ReportSellBookEachCategoryRequestDto): Promise<IReportSellBookEachCategoryResponse> {
-    const { fullDate, day, month, year }: ReportTopSellBookRequestDto = payload;
-
+  private generateDateFilter(fullDate: string, day: number, month: number, year: number) {
     const filters: Record<string, any> = {};
 
     if (fullDate) {
@@ -235,17 +217,34 @@ export class BookService {
       if (year) filters.$expr.$and.push(yearFilter);
     }
 
-    const sellBookEachCategory = await this.bookModel.find(filters, { price: 0, stock: 0, imageFileName: 0 });
+    return filters;
+  }
+
+  public async reportSellBookEachCategory(payload: ReportSellBookEachCategoryRequestDto): Promise<IReportSellBookEachCategoryResponse> {
+    const results = [];
+    const categories = await this.categoryModel.find({}, { name: 1 });
+    categories.forEach(cate => results.push({ name: cate.name, books: [], totalSold: 0 }));
+
+    const sellBookEachCategory = await this.bookModel.find({}, { price: 0, stock: 0, imageFileName: 0 });
+    sellBookEachCategory.forEach(book => {
+      book.categories.forEach(cate => {
+        let index = results.findIndex(r => r.name.toString() === cate.toString());
+        if (index !== -1) {
+          results[index].totalSold += book.sold;
+          results[index].books.push(book.name)
+        }
+      })
+    });
 
     return {
-      data: sellBookEachCategory,
+      data: results,
       message: 'Get report sell book each category successful',
       status: HttpStatus.OK,
       error: null,
     }
   }
 
-  public async getTopUserPurchasedBook() {
+  public async getTopUserPurchasedBook(): Promise<IGetTopUserPurchaseBookResponse> {
     const results = [];
 
     const users = await firstValueFrom(this.userServiceClient.send({ service: 'user', cmd: 'get-all-top-user' }, ''));
@@ -291,7 +290,12 @@ export class BookService {
       }
     })
 
-    return results;
+    return {
+      data: results.sort((a, b) => b.totalQuantity - a.totalQuantity),
+      message: 'Get top user purchase book successful',
+      status: HttpStatus.OK,
+      error: null,
+    }
   }
 
   // send to user service
