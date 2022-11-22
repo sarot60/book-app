@@ -15,17 +15,23 @@ $ cd book-app
 
 $ ./run.docker-compose.sh
 
+#
+
+# Optional
 # if cannot excute this file
 $ chmod -R 777 run.docker-compose.sh
 ```
 
-## Option 2 - use manual docker (Required docker login, Not Recomand)
+## Option 2 - use manual docker (Required docker login, Not Recommand)
 
 ```bash
 $ cd book-app
 
 $ ./run.docker.sh
 
+#
+
+# Optional
 # if cannot excute this file
 $ chmod -R 777 run.docker.sh
 ```
