@@ -2,8 +2,7 @@ import { Body, Controller, DefaultValuePipe, Delete, Get, Inject, Param, ParseIn
 import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { catchError, firstValueFrom } from 'rxjs';
-import { AuthJwtGuard } from '../auth/guards/auth-jwt.guard';
-import { MapExceptionFromRpc } from '../common/map-exception-from-rpc-to-http';
+
 import { CreateUserRequestDto } from './dto/create-user-request.dto';
 import { CreateUserResponseDto } from './dto/create-user-response.dto';
 import { DeleteUserRequestDto } from './dto/delete-user-request.dto';
@@ -18,6 +17,8 @@ import { GetUserByIdResponseDto } from './dto/get-user-by-id-response.dto';
 import { ReportNewUserResponse } from './dto/report-new-user.-response.dto';
 import { UpdateUserRequestDto } from './dto/update-user-request.dto';
 import { UpdateUserResponseDto } from './dto/update-user-response.dto';
+import { AuthJwtGuard } from '../auth/guards/auth-jwt.guard';
+import { MapExceptionFromRpc } from '../common/map-exception-from-rpc-to-http';
 
 @Controller('user')
 @ApiTags('user')

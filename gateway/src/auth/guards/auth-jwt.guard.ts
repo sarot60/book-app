@@ -29,7 +29,6 @@ export class AuthJwtGuard implements CanActivate {
 
     if (!data) {
       throw new UnauthorizedException();
-      // throw new UnauthorizedException(dataToken.message);
     }
 
     const { _id, username, banned, roles } = data;

@@ -1,4 +1,3 @@
-import { ApiProperty } from "@nestjs/swagger";
 import { Types } from "mongoose";
 import { Role } from "../roles.enum";
 

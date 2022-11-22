@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { catchError, firstValueFrom } from "rxjs";
+
 import { MapExceptionFromRpc } from "../common/map-exception-from-rpc-to-http";
 import { ValidateTokenRequestDto } from "./dto/validate-token-request.dto";
 import { ValidateTokenResponseDto } from "./dto/validate-token-response.dto";
