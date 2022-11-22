@@ -1,5 +1,7 @@
-import { Types } from 'mongoose';
+import { ApiProperty } from "@nestjs/swagger";
+import { Types } from "mongoose";
 
 export class GetUserByIdRequestDto {
-  userId: Types.ObjectId;
+  @ApiProperty({example: '637c45a9e24591f1c6df69b8'})
+  userId: string;
 }

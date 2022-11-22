@@ -1,15 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Types } from "mongoose";
 
-export class DeleteUserResponseDto {
+export class GetUserLoginCountResponse {
   @ApiProperty({
     example: {
-      userId: "637b6c47595ec31f51ce2e63"
+      "count": 52
     }
   })
-  data: { [key: string]: any } | null;
+  data: {
+    count: number
+  } | null;
 
-  @ApiProperty({ example: 'Delete user successful' })
+  @ApiProperty({ example: 'Get user login count successful' })
   message: string;
 
   @ApiProperty({ example: 200 })

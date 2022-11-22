@@ -3,12 +3,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 
 export class UpdateUserRequestDto {
-  @ApiProperty()
   username: string;
 
-  @ApiProperty()
+  @ApiProperty({example: 'Rado'})
   firstName: string;
 
-  @ApiProperty()
+  @ApiProperty({example: 'i too'})
   lastName: string;
 }
