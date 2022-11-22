@@ -30,10 +30,8 @@ export class UserController {
 
   @MessagePattern({ service: 'user', cmd: 'create' })
   private async createUser(@Payload() payload: CreateUserRequestDto): Promise<ICreateUserResponse> {
-
     const hashedPassword = this.authHelper.encodePassword(payload.password + this.configService.get<string>('PASSWORD_SECRET'));
     payload.password = hashedPassword;
-
     return await this.userService.createUser(payload);
   }
 
