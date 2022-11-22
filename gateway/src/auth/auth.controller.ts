@@ -2,7 +2,7 @@ import { Body, Controller, HttpCode, Inject, Param, Post, Put, Req, UseGuards } 
 import { ClientProxy } from '@nestjs/microservices';
 import { Request } from 'express';
 import { catchError, firstValueFrom } from 'rxjs';
-import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiNotFoundResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth, ApiNotFoundResponse, ApiUnauthorizedResponse, ApiForbiddenResponse } from '@nestjs/swagger';
 
 import { Role } from './roles.enum';
 import { Roles } from './roles.decorator';
@@ -37,8 +37,9 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('login')
+  @ApiUnauthorizedResponse({ description: 'password is incorrect.' })
+  @ApiForbiddenResponse({ description: 'Unable to login, please wait 10 seconds.' })
   @ApiOkResponse({ type: LoginResponseDto })
-  @ApiNotFoundResponse()
   private async login(@Body() body: LoginRequestDto, @Req() req: Request): Promise<LoginResponseDto> {
     const request: LoginRequestDto = { username: body.username, password: body.password, clientIp: req.ip };
     const loginResponse = await firstValueFrom(this.userServiceClient
