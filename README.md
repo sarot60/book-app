@@ -4,6 +4,12 @@
 > 
 > Because my device will :boom::bomb::boom:
 
+# Description
+
+user init data = 10 users</br>
+book init data = 10 books</br>
+purchase order init data = 100 orders</br>
+
 </br>
 
 # Run application loopback rest-api/microservices
