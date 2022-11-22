@@ -28,12 +28,10 @@ export class AuthController {
   @Post('register')
   @ApiCreatedResponse({ type: RegisterResponseDto })
   private async register(@Body() request: RegisterRequestDto): Promise<RegisterResponseDto> {
-
     const registerResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'register' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
-
     return registerResponse;
   }
 
@@ -43,12 +41,10 @@ export class AuthController {
   @ApiNotFoundResponse()
   private async login(@Body() body: LoginRequestDto, @Req() req: Request): Promise<LoginResponseDto> {
     const request: LoginRequestDto = { username: body.username, password: body.password, clientIp: req.ip };
-
     const loginResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'login' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
-
     return loginResponse;
   }
 
@@ -58,12 +54,10 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: ChangePasswordResponseDto })
   private async changePassword(@Body() request: ChangePasswordRequestDto): Promise<ChangePasswordResponseDto> {
-    
     const changePasswordResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'change-password' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
-
     return changePasswordResponse;
   }
 
@@ -74,12 +68,10 @@ export class AuthController {
   @ApiOkResponse({ type: BanResponseDto })
   private async banTheUser(@Param('id') id: string): Promise<BanResponseDto> {
     const request: BanRequestDto = { userId: id };
-
     const bannedResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'ban' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
-
     return bannedResponse;
   }
 
@@ -90,12 +82,10 @@ export class AuthController {
   @ApiOkResponse({ type: CancelBanResponseDto })
   private async cancelBanTheUser(@Param('id') id: string): Promise<CancelBanResponseDto> {
     const request: CancelBanRequestDto = { userId: id };
-
     const cancelBanResponse = await firstValueFrom(this.userServiceClient
       .send({ service: 'user', cmd: 'cancel-ban' }, request)
       .pipe(catchError(error => new MapExceptionFromRpc().mapException(error)))
     );
-
     return cancelBanResponse;
   }
 }
