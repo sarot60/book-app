@@ -1,8 +1,6 @@
 > **NOTE**
 >
 > This microservice application uses a single database instance for all microservices.
-> 
-> Because my device will :boom::bomb::boom:
 
 # Description
 
